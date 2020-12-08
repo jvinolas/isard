@@ -51,6 +51,14 @@ TELEGRAM_BOT_CHAT_ID=
 ##################################################################
 ##################################################################
 
+# NETWORKS
+## isard-network
+## This is the internal network that connects dockers.
+## Here you can modify the net if it overlaps with your
+## infrastructure networks.
+NET_ISARD_NETWORK=172.33.254.0
+MASK_ISARD_NETWORK=24
+
 # DOCKER IMAGES
 # Image prefix that could include registry and repository
 DOCKER_IMAGE_PREFIX=registry.gitlab.com/isard/isardvdi/

@@ -1,5 +1,8 @@
 version: "3.5"
 networks:
   isard-network:
-    external: false
-    name: isard-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet:  ${NET_ISARD_NETWORK}/${MASK_ISARD_NETWORK}
