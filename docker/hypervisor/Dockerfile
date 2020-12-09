@@ -24,8 +24,13 @@ RUN apk add --no-cache git \
     #alsa-lib-dev \
     perl
 
+## For qemu 5.2 ninja is required. Alpine uses samurai-1.1-r0 and the query tool
+## needed is in samurai-1.1-r1. So, download latest and install
+RUN wget http://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/samurai-1.1-r1.apk
+RUN apk add --no-cache samurai-1.1-r1.apk
+
 # Build QEMU
-RUN git clone --depth 1 --branch v5.1.0 https://github.com/qemu/qemu && \
+RUN git clone --depth 1 --branch v5.2.0 https://github.com/qemu/qemu && \
     cd qemu && \
     mkdir -p bin/debug/native && \
     cd bin/debug/native && \
