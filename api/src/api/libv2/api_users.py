@@ -13,6 +13,7 @@ from rethinkdb import RethinkDB; r = RethinkDB()
 from rethinkdb.errors import ReqlTimeoutError
 
 import logging as log
+import traceback 
 
 from .flask_rethink import RDB
 db = RDB(app)
@@ -154,22 +155,23 @@ class ApiUsers():
                         if ud['id'] in d['allowed']['users']:
                             alloweds.append(d)
                             continue
-            ''' Now check if has any already started '''
-            with app.app_context():
-                desktops_started = list(r.db('isard').table('domains').get_all(user_id, index='user').filter({'persistent':False,'status':'Started'}).run(db.conn))                            
-            modified_alloweds=[]
-            for tmpl in alloweds:
-                tmpl['id_desktop']=''
-                tmpl['status']='Stopped'
-                for dsk in desktops_started:
-                    if tmpl['id'] == dsk['from_template']:
-                        tmpl['id_desktop']=dsk['id']
-                        tmpl['status']='Started'
-                        break
-                if 'viewers_allowed' not in tmpl.keys(): tmpl['viewers_allowed']=['spice','html5','rdp','console']
-                modified_alloweds.append(tmpl)
+            #''' Now check if has any already started '''
+            #with app.app_context():
+            #    desktops_started = list(r.db('isard').table('domains').get_all(user_id, index='user').filter({'persistent':False,'status':'Started'}).run(db.conn))                            
+            #modified_alloweds=[]
+            #for tmpl in alloweds:
+            #    tmpl['id_desktop']=''
+            #    tmpl['status']='Stopped'
+            #    for dsk in desktops_started:
+            #        if tmpl['id'] == dsk['from_template']:
+            #            tmpl['id_desktop']=dsk['id']
+            #            tmpl['status']='Started'
+            #            break
+            #    if 'viewers_allowed' not in tmpl.keys(): tmpl['viewers_allowed']=['spice','html5','rdp','console']
+            #    modified_alloweds.append(tmpl)
 
-            return modified_alloweds
+            #return modified_alloweds
+            return alloweds
         except Exception as e:
             raise UserTemplatesError
 
@@ -180,13 +182,22 @@ class ApiUsers():
         try:
             with app.app_context():
                 desktops = list(r.table('domains').get_all(user_id, index='user').filter({'kind':'desktop'}).order_by('name').pluck({'id','name','icon','user','status','description'}).run(db.conn))
-                modified_desktops=[]
-                for d in desktops:
-                    if d['status'] not in ['Started','Failed']: d['status']='Stopped'
-                    d['viewers_allowed']=['spice','html5','rdp','console']
-                    modified_desktops.append(d)
-                return modified_dekstops
+            modified_desktops=[]
+            for d in desktops:
+                if d['status'] not in ['Started','Failed']: d['status']='Stopped'
+                if 'from_template' not in d.keys(): d['from_template']=''
+                
+                if 'persistent' not in d.keys(): d['persistent']=True
+                if d['persistent'] == False: 
+                    d['type']='nonpersistent'
+                else:
+                    d['type']='persistent'
+                d['viewers']=['spice','html5','rdp','console']
+                modified_desktops.append(d)
+            return modified_desktops
         except Exception as e:
+            error = traceback.format_exc()
+            print(error)
             raise UserDesktopsError
 
     def Delete(self,user_id):

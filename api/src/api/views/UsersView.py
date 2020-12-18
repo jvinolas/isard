@@ -267,7 +267,7 @@ def api_v2_user_templates(id=False):
 
     try:
         templates = users.Templates(id)
-        dropdown_templates = [{'id':t['id'],'id_desktop':t['id_desktop'],'name':t['name'],'icon':t['icon'],'description':t['description']} for t in templates]
+        dropdown_templates = [{'id':t['id'],'name':t['name'],'icon':t['icon'],'image':'','description':t['description']} for t in templates]
         return json.dumps(dropdown_templates), 200, {'ContentType': 'application/json'}
     except UserNotFound:
         log.error("User "+id+" not in database.")
@@ -287,13 +287,13 @@ def api_v2_user_desktops(id=False):
 
     try:
         desktops = users.Desktops(id)
-        dropdown_desktops = [{'id':d['id'],'name':d['name'],'status':d['status'],'icon':d['icon'],'description':d['description']} for d in desktops]
+        dropdown_desktops = [{'id':d['id'],'name':d['name'],'state':d['status'],'type':d['type'],'template':d['from_template'],'viewers':d['viewers'],'icon':d['icon'],'image':'','description':d['description']} for d in desktops]
         return json.dumps(dropdown_desktops), 200, {'ContentType': 'application/json'}
     except UserNotFound:
         log.error("User "+id+" not in database.")
         return json.dumps({"code":1,"msg":"UserDesktops: User not exists in database"}), 404, {'ContentType': 'application/json'}
     except UserDesktopsError:
-        log.error("Template list for user "+id+" failed.")
+        log.error("Desktops list for user "+id+" failed.")
         return json.dumps({"code":2,"msg":"UserDesktops: list error"}), 404, {'ContentType': 'application/json'}
     except Exception as e:
         error = traceback.format_exc()

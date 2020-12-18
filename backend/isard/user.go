@@ -104,8 +104,13 @@ func (i *Isard) UserUpdate(u *model.User) error {
 type userDesktopRsp struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 	State string `json:"state,omitempty"`
+	Type string `json:"type,omitempty"`
+	Template string `json:"template,omitempty"`
+	Viewers []string `json:"viewers,omitempty"`
 	Icon string `json:"icon,omitempty"`
+	Image string `json:"image,omitempty"`
 }
 
 func (i *Isard) UserDesktops(u *model.User) error {
@@ -143,11 +148,16 @@ func (i *Isard) UserDesktops(u *model.User) error {
 	}
 
 	for _, t := range desktops {
-		u.Desktops = append(u.Desktops, model.Desktops{
+		u.Desktops = append(u.Desktops, model.Desktop{
 			ID:   t.ID,
 			Name: t.Name,
+			Description: t.Description,
 			State: t.State,
+			Type: t.Type,
+			Template: t.Template,
+			Viewers: t.Viewers,
 			Icon: t.Icon,
+			Image: t.Image,
 		})
 	}
 
@@ -157,8 +167,9 @@ func (i *Isard) UserDesktops(u *model.User) error {
 type userTemplateRsp struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
-	State string `json:"state,omitempty"`
+	Description string `json:"description,omitempty"`
 	Icon string `json:"icon,omitempty"`
+	Image string `json:"image,omitempty"`
 }
 
 func (i *Isard) UserTemplates(u *model.User) error {
@@ -199,8 +210,9 @@ func (i *Isard) UserTemplates(u *model.User) error {
 		u.Templates = append(u.Templates, model.Template{
 			ID:   t.ID,
 			Name: t.Name,
-			State: t.State,
+			Description: t.Description,
 			Icon: t.Icon,
+			Image: t.Image,
 		})
 	}
 

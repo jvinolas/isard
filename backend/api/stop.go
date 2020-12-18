@@ -17,13 +17,13 @@ func (a *API) stop(w http.ResponseWriter, r *http.Request) {
 		c = &cookie{}
 	}
 
-	id, err := a.env.Isard.DesktopStop(u, dsk, false)
+	err = a.env.Isard.DesktopStop(dsk)
 	if err != nil {
 		handleErr(err, w, r)
 		return
 	}
 
-	c.DesktopID = id
+	c.DesktopID = dsk
 	if err := c.update(u, w); err != nil {
 		handleErr(err, w, r)
 		return
