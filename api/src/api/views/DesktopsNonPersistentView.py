@@ -162,7 +162,6 @@ def api_v2_desktop_new():
         error = traceback.format_exc()
         return json.dumps({"code":9,"msg":"DesktopNew general exception: " + error }), 401, {'ContentType': 'application/json'}
 
-
 @app.route('/api/v2/desktop/<desktop_id>/viewer/<protocol>', methods=['GET'])
 def api_v2_desktop_viewer(desktop_id=False, protocol=False):
     if desktop_id == False or protocol == False:

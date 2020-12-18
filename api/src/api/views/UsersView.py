@@ -53,7 +53,6 @@ def api_v2_login():
         error = traceback.format_exc()
         return json.dumps({"code":9,"msg":"UserExists general exception: " + error }), 401, {'ContentType': 'application/json'}
 
-
 @app.route('/api/v2/category/<id>', methods=['GET'])
 def api_v2_category(id):
     try:
@@ -82,7 +81,6 @@ def api_v2_register():
     except Exception as e:
         error = traceback.format_exc()
         return json.dumps({"code":9,"msg":"Register general exception: " + error }), 401, {'ContentType': 'application/json'}
-
 
 @app.route('/api/v2/user/<id>', methods=['GET'])
 def api_v2_user_exists(id=False):
@@ -215,8 +213,6 @@ def api_v2_user_delete(user_id):
         error = traceback.format_exc()
         return json.dumps({"code":9,"msg":"UserDelete general exception: " + error }), 401, {'ContentType': 'application/json'}
 
-
-
 @app.route('/api/v2/user/<id>/templates', methods=['GET'])
 def api_v2_user_templates(id=False):
     if id == False:
@@ -271,7 +267,7 @@ def api_v2_user_templates(id=False):
 
     try:
         templates = users.Templates(id)
-        dropdown_templates = [{'id':t['id'],'name':t['name'],'icon':t['icon'],'description':t['description']} for t in templates]
+        dropdown_templates = [{'id':t['id'],'id_desktop':t['id_desktop'],'name':t['name'],'icon':t['icon'],'description':t['description']} for t in templates]
         return json.dumps(dropdown_templates), 200, {'ContentType': 'application/json'}
     except UserNotFound:
         log.error("User "+id+" not in database.")
