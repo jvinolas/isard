@@ -187,7 +187,10 @@ class ApiUsers():
                 if d['status'] not in ['Started','Failed']: d['status']='Stopped'
                 if 'from_template' not in d.keys(): d['from_template']=''
                 
-                if 'persistent' not in d.keys(): d['persistent']=True
+                if 'persistent' not in d.keys(): 
+                    d['persistent']=True
+                else:
+                    d['persistent']=False
                 if d['persistent'] == False: 
                     d['type']='nonpersistent'
                 else:
