@@ -200,26 +200,3 @@ AllowedIPs = 192.168.128.0/22
 PersistentKeepalive = 21
 """ % (peer['vpn']['wireguard']['AllowedIPs'],peer['vpn']['wireguard']['keys']['private'],self.keys.skeys['public'])
 
-
-#[Interface]
-#Address = 10.200.200.1/24
-#SaveConfig = true
-#PrivateKey = SERVER_PRIVATE_KEY
-#ListenPort = 51820
-
-#[Peer]
-#PublicKey = CLIENT_PUBLIC_KEY
-#AllowedIPs = 10.200.200.2/32
-
-###############33333
-
-
-#[Interface]
-#Address = 10.200.200.3/32
-#PrivateKey = CLIENT_PRIVATE_KEY
-#DNS = 10.200.200.1
-
-#[Peer]
-#PublicKey = SERVER_PUBLICKEY
-#Endpoint = my.ddns.example.com:51820
-#AllowedIPs = 192.168.128.0/22, ::/0
