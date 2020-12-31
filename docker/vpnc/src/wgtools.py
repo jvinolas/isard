@@ -81,18 +81,11 @@ class Wg(object):
         # Get actual server keys or generate new ones
         self.keys=Keys()
         
-        
-        self.server_mask=os.environ['WG_CLIENTS_NET'].split('/')[1]
-        self.server_net=ipaddress.ip_network(os.environ['WG_CLIENTS_NET'], strict=False)
-        # Get first one from range for us!
-        self.server_ip=str(self.server_net[1])
+        server_ip=os.environ['WIREGUARD_SERVER_IP'].split('/')[0]
+        server_mask=os.environ['WIREGUARD_SERVER_IP'].split('/')[1]
+        self.server_net=ipaddress.ip_network(os.environ['WIREGUARD_SERVER_IP'], strict=False)
 
-
-        #server_ip=os.environ['WIREGUARD_SERVER_IP'].split('/')[0]
-        #server_mask=os.environ['WIREGUARD_SERVER_IP'].split('/')[1]
-        #self.server_net=ipaddress.ip_network(os.environ['WIREGUARD_SERVER_IP'], strict=False)
-
-        self.clients_reserved_ips=[self.server_ip]
+        self.clients_reserved_ips=[server_ip]
         # Get existing users wireguard config and generate new one's if not exist.
         self.init_peers()
         #for user_id,peer in self.peers.items():
@@ -173,6 +166,9 @@ class Wg(object):
     def set_iptables(self,peer):
         iptables=peer['vpn']['iptables']
 
+    def sync_peers(self):
+        None
+
     def server_config(self):
         return """[Interface]
 Address = %s
@@ -181,7 +177,7 @@ PrivateKey = %s
 ListenPort = 443
 PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-prohibited
 
-""" % (self.server_ip,self.keys.skeys['private'])
+""" % (os.environ['WIREGUARD_SERVER_IP'],self.keys.skeys['private'])
 
     def client_config(self,peer):
         return """[Interface]

@@ -162,6 +162,8 @@ COPY docker/hypervisor/auto-generate-certs.sh /
 COPY docker/hypervisor/vlans-add.sh /
 COPY docker/hypervisor/vlans-discover.sh /
 COPY docker/hypervisor/vlans-db.py /
+RUN apk add bash
+COPY docker/hypervisor/wireguard.sh /
 COPY docker/hypervisor/run.sh /
 RUN chmod +x run.sh auto-generate-certs.sh
 

@@ -6,7 +6,7 @@ services:
     networks:
       isard-network: {}
       isard-vpn:
-        ipv4_address: 192.168.119.3
+        ipv4_address: ${WG_HYPER_NET_HYPER_PEER}
     ports:
       - "2022:22"
     privileged: true

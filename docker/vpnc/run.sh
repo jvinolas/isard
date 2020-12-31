@@ -7,6 +7,6 @@ then
 fi
 
 # Allows wireguard to reach guests in hypervisor
-ip r a $WG_HYPER_GUESTNET via $WG_HYPER_NET_HYPER_PEER
+ip r a 192.168.128.0/22 via 192.168.119.3
 cd /src
 python3 wgadmin.py

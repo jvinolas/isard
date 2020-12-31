@@ -15,15 +15,12 @@ def dbConnect():
 
 while True:
     try:
-        # App was restarted or db was lost. Just sync peers before get into changes.
-        print('Checking initial config...')
         dbConnect()
         wg=Wg()
-
+        # App was restarted or db was lost. Just sync peers before get into changes.
+        print('Checking initial config...')
         print('Config regenerated from database...\nStarting to monitor users changes...')
         for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
-        #for user in r.table('users').pluck('id','vpn').merge({'table':'users'}).changes(include_initial=False).union(
-        #    r.table('hypervisors').pluck('id','vpn').merge({'table':'hypers'}).changes(include_initial=False)).run():
             if user['new_val'] == None:
                 ### User was deleted
                 print('User deleted:')
