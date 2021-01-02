@@ -80,28 +80,20 @@ class Wg(object):
     def __init__(self):
         # Get actual server keys or generate new ones
         self.keys=Keys()
-        
-        
+
         self.server_mask=os.environ['WG_CLIENTS_NET'].split('/')[1]
         self.server_net=ipaddress.ip_network(os.environ['WG_CLIENTS_NET'], strict=False)
         # Get first one from range for us!
         self.server_ip=str(self.server_net[1])
 
-
-        #server_ip=os.environ['WIREGUARD_SERVER_IP'].split('/')[0]
-        #server_mask=os.environ['WIREGUARD_SERVER_IP'].split('/')[1]
-        #self.server_net=ipaddress.ip_network(os.environ['WIREGUARD_SERVER_IP'], strict=False)
-
         self.clients_reserved_ips=[self.server_ip]
         # Get existing users wireguard config and generate new one's if not exist.
+        self.init_server()
         self.init_peers()
         #for user_id,peer in self.peers.items():
         #    print(self.client_config(peer))
 
-    def init_peers(self):
-        # This will reset all vpn config on restart. Remove to keep old configs.
-        #r.table('users').replace(r.row.without('vpn')).run()
-
+    def init_server(self):
         ## Server config
         try:
             check_output(('/usr/bin/wg-quick', 'down', 'wg0'), text=True).strip()
@@ -116,28 +108,37 @@ class Wg(object):
         check_output(('/usr/bin/wg-quick', 'up', 'wg0'), text=True).strip()
         ## End server config
 
+    def init_peers(self):
+        # This will reset all vpn config on restart.
+        #r.table('users').replace(r.row.without('vpn')).run()
+        #r.table('hypervisors').replace(r.row.without('vpn')).run()
 
-        wglist = list(r.table('users').pluck('id','vpn').run())
-        self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
-        #print(self.clients_reserved_ips)
-        create_peers=[]
-        if self.keys.update_clients == True:
-            print('Server key changed. Generating new client keys for all users...')
-        for peer in wglist:
-            new_peer=False
-            if self.keys.update_clients == True and 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
-                new_peer=peer
-                new_peer['vpn']['wireguard']['keys']=self.keys.new_client_keys()
-                create_peers.append(new_peer)
-            if 'vpn' not in peer.keys():
-                new_peer=self.gen_new_peer(peer)
-                create_peers.append(new_peer)
-            if new_peer == False:
-                self.up_peer(peer)
-            else:
-                self.up_peer(new_peer)
+        vpn_tables = ['hypervisors','users']
+        wglist_tables={}
+        for table in vpn_tables:
+            wglist_tables[table] = list(r.table(table).pluck('id','vpn').run())
+            self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist_tables[table] if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
 
-        r.table('users').insert(create_peers, conflict='update').run()
+        for table in vpn_tables:
+            wglist = wglist_tables[table]
+            create_peers=[]
+            if self.keys.update_clients == True:
+                print('Server key changed. Generating new client keys for all users...')
+            for peer in wglist:
+                new_peer=False
+                if self.keys.update_clients == True and 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
+                    new_peer=peer
+                    new_peer['vpn']['wireguard']['keys']=self.keys.new_client_keys()
+                    create_peers.append(new_peer)
+                if 'vpn' not in peer.keys():
+                    new_peer=self.gen_new_peer(peer)
+                    create_peers.append(new_peer)
+                if new_peer == False:
+                    self.up_peer(peer)
+                else:
+                    self.up_peer(new_peer)
+            pprint(create_peers)
+            r.table(table).insert(create_peers, conflict='update').run()
 
     def gen_new_peer(self,peer):
         return {'id':peer['id'],

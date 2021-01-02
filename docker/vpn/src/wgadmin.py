@@ -21,9 +21,9 @@ while True:
         wg=Wg()
 
         print('Config regenerated from database...\nStarting to monitor users changes...')
-        for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
-        #for user in r.table('users').pluck('id','vpn').merge({'table':'users'}).changes(include_initial=False).union(
-        #    r.table('hypervisors').pluck('id','vpn').merge({'table':'hypers'}).changes(include_initial=False)).run():
+        #for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
+        for user in r.table('users').pluck('id','vpn').merge({'table':'users'}).changes(include_initial=False).union(
+            r.table('hypervisors').pluck('id','vpn').merge({'table':'hypers'}).changes(include_initial=False)).run():
             if user['new_val'] == None:
                 ### User was deleted
                 print('User deleted:')
@@ -54,6 +54,6 @@ while True:
         print('Users internal error: \n'+traceback.format_exc())
         log.error('Users internal error: \n'+traceback.format_exc())
         exit(1)
-        
+
 print('Users ENDED!!!!!!!')
 log.error('Users ENDED!!!!!!!')  

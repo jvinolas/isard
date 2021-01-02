@@ -7,50 +7,54 @@ from rethinkdb.errors import ReqlDriverError, ReqlTimeoutError
 
 import logging as log
 
-from wgtools import Wg
-
+from subprocess import check_call, check_output
 
 def dbConnect():
-    r.connect(host=os.environ['RETHINKDB_HOST'], port=os.environ['RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
+    r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
 
-while True:
+def get_wireguard_file(peer):
+    endpoint=os.environ['STATS_RETHINKDB_HOST']
+    try:
+        server_public_key=r.db('isard').table('config').get(1).pluck({'vpn':{'wireguard':{'keys':{'public'}}}}).run()['vpn']['wireguard']['keys']['public']
+    except:
+        raise
+    return """[Interface]
+Address = %s
+PrivateKey = %s
+
+[Peer]
+PublicKey = %s
+Endpoint = %s:443
+AllowedIPs = %s
+PersistentKeepalive = 21
+""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],server_public_key,endpoint,peer['vpn']['wireguard']['AllowedIPs'])
+
+def init_client(peer):
+    ## Server config
+    try:
+        check_output(('/usr/bin/wg-quick', 'down', 'wg0'), text=True).strip()
+    except:
+        None
+    with open("/etc/wireguard/wg0.conf", "w") as f:
+        f.write(get_wireguard_file(peer))
+    check_output(('/usr/bin/wg-quick', 'up', 'wg0'), text=True).strip()
+
+connection=False
+while not connection:
     try:
         dbConnect()
-        wg=Wg()
-        # App was restarted or db was lost. Just sync peers before get into changes.
-        print('Checking initial config...')
-        print('Config regenerated from database...\nStarting to monitor users changes...')
-        for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
-            if user['new_val'] == None:
-                ### User was deleted
-                print('User deleted:')
-                wg.remove_peer(user['old_val'])
-                continue
-            if user['old_val'] == None:
-                ### New user
-                print('New user '+user['new_val']['id']+'found...')
-                wg.add_peer(user['new_val'])
-            else:
-                ### Updated vpn user config
-                if 'vpn' not in user['old_val']: 
-                    continue #Was just added
-
-                if user['old_val']['vpn']['iptables'] != user['new_val']['vpn']['iptables']:
-                    print('Modified iptables')
-                    wg.set_iptables(user['new_val'])
-                else:
-                    print('Modified user wireguard config')
-                    # who else could modify the wireguard config?? 
-                    wg.update_peer(user['new_val'])
-
+        peer = r.table('hypervisors').get('isard-hypervisor').run()
+        if peer != None:
+            init_client(peer)
+            connection=True
     except ReqlDriverError:
-        print('Users: Rethink db connection lost!')
-        log.error('Users: Rethink db connection lost!')
-        time.sleep(.5)
+        print('Hypervisors: Rethink db connection lost!')
+        log.error('Hypervisors: Rethink db connection lost!')
+        time.sleep(5)
     except Exception as e:
-        print('Users internal error: \n'+traceback.format_exc())
-        log.error('Users internal error: \n'+traceback.format_exc())
+        print('Hypervisors internal error: \n'+traceback.format_exc())
+        log.error('Hypervisors internal error: \n'+traceback.format_exc())
         exit(1)
         
-print('Users ENDED!!!!!!!')
-log.error('Users ENDED!!!!!!!')  
+print('Hypervisors ENDED!!!!!!!')
+log.error('Hypervisors ENDED!!!!!!!')  

@@ -3,7 +3,8 @@ echo "Generating selfsigned certs for spice client..."
 sh auto-generate-certs.sh
 
 echo "Setting wireguard.xml network for $WG_HYPER_GUESTNET"
-bash wireguard.sh
+sh wireguard.sh
+
 ip r a $WG_CLIENTS_NET via ${WG_HYPER_NET_WG_PEER}
 
 echo "Starting libvirt daemon..."

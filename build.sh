@@ -122,12 +122,14 @@ flavour hypervisor \
 	websockify \
 	squid \
 	stats \
+	vpnc \
 
 flavour hypervisor-standalone \
 	network \
 	hypervisor \
 	hypervisor-standalone \
 	stats \
+	vpnc \
 
 flavour video-standalone \
 	network \

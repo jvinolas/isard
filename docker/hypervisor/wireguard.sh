@@ -1,7 +1,6 @@
 # Allows hyper to reach wireguard clients
-IFS=. read ip1 ip2 ip3 ip4 <<< "$WG_HYPER_GUESTNET"
-GW=$ip1.$ip2.$ip3.1
-IFS=/ read ip4 PREFIX <<< "$ip4"
+GW=$(echo $WG_HYPER_GUESTNET | awk -F'.' -v OFS="." '$4=1')
+PREFIX=${WG_HYPER_GUESTNET##*/}
 cat > /etc/libvirt/qemu/networks/wireguard.xml << EOF
 <network xmlns:dnsmasq='http://libvirt.org/schemas/network/dnsmasq/1.0'>
   <name>wireguard</name>
