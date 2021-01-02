@@ -14,6 +14,7 @@ services:
       - published: 443
         target: 443
         protocol: udp
+    privileged: true
     volumes:
       - /sys:/sys:rw
       - /opt/isard-local/wireguard/certs:/certs
