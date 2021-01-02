@@ -81,7 +81,7 @@ WG_HYPER_NET_HYPER_PEER=192.168.119.3
 ## overlapping ranges here for each hypervisor.
 ## Allways leave an initial range free for server desktops that
 ## will have fixed ip/mac
-WG_HYPER_GUESTNET=192.168.128.0/22
+WG_HYPER_GUESTNET=192.168.128.0/23
 WG_HYPER_GUESTNET_DHCP_START=192.168.128.33
 WG_HYPER_GUESTNET_DHCP_END=192.168.129.254
 
