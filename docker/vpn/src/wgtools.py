@@ -146,7 +146,7 @@ class Wg(object):
                         'wireguard':
                             {'Address':self.gen_client_ip(),
                             'keys':self.keys.new_client_keys(),
-                            'AllowedIPs':'192.168.128.0/22'}}} 
+                            'AllowedIPs':'0.0.0.0/0'}}} 
 
     def up_peer(self,peer):
         check_output(('/usr/bin/wg', 'set', 'wg0', 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', peer['vpn']['wireguard']['Address']), text=True).strip()  
@@ -183,6 +183,10 @@ ListenPort = 443
 PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-prohibited
 
 """ % (self.server_ip,self.keys.skeys['private'])
+
+
+
+
 
     def client_config(self,peer):
         return """[Interface]
