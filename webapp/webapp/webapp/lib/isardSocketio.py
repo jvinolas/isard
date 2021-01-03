@@ -55,6 +55,9 @@ class DomainsThread(threading.Thread):
                             data=c['new_val']                    
                             if data['kind']=='desktop':
                                 event='desktop_data'
+                                #if data['status'] == 'Started' and 'viewer' in data.keys() and 'guest_ip' in data['viewer'].keys():
+                                #    if 'viewer' not in c['old_val'] or 'guest_ip' not in c['old_val']:
+                                #        event='desktop_guestip'
                             else:
                                 event='template_data'
                                 try:

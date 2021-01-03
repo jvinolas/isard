@@ -7,6 +7,8 @@ sh wireguard.sh
 
 ip r a $WG_CLIENTS_NET via ${WG_HYPER_NET_WG_PEER}
 
+env > /tmp/env
+
 echo "Starting libvirt daemon..."
 chown root:kvm /dev/kvm
 /usr/sbin/virtlogd &

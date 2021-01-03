@@ -221,9 +221,11 @@ $(document).ready(function() {
 				});	
                 break;
             case 'btn-display':
-                //~ chooseViewer(data,socket);
                 setViewerButtons(data['id'],socket);
 
+                if('viewer' in data && 'guest_ip' in data['viewer']){
+                    $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+                }
                 $('#modalOpenViewer').modal({
                     backdrop: 'static',
                     keyboard: false
@@ -265,6 +267,14 @@ $(document).ready(function() {
     socket.on('desktop_data', function(data){
         var data = JSON.parse(data);
         console.log('desktop_data')
+
+        if(data.status =='Started' && 'viewer' in data && 'guest_ip' in data['viewer']){
+            if(!('viewer' in table.row('#'+data.id).data()) || !('guest_ip' in table.row('#'+data.id).data())){
+                console.log('NEW IP ARRIVED!: '+data['viewer']['guest_ip'])
+                $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+            }
+        }
+
         if(data.status =='Started' && table.row('#'+data.id).data().status != 'Started'){
             
             if('preferred' in data['options']['viewers'] && data['options']['viewers']['preferred']){

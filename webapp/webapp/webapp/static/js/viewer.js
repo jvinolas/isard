@@ -46,6 +46,9 @@ function setViewerButtons(id,socket,offer){
             html=br+prehtml+html+'<button data-pk="'+id+'" data-type="'+disp['type']+'" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn '+success+' '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;
     })
     $('#viewer-buttons').html(html);
+    loading='<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>'
+    //$('#viewer-buttons button[data-type="vpn"]').html(loading)
+    $('#viewer-buttons button[data-type="vpn"]').prop("disabled",true).html($('#viewer-buttons button[data-type="vpn"]').html()+loading);
     $('#viewer-buttons .btn-viewers').on('click', function () {
         if($('#chk-viewers').iCheck('update')[0].checked){
             preferred=true

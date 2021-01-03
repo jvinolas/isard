@@ -164,6 +164,9 @@ COPY docker/hypervisor/vlans-discover.sh /
 COPY docker/hypervisor/vlans-db.py /
 RUN apk add bash
 COPY docker/hypervisor/wireguard.sh /
+COPY docker/hypervisor/update-client-ips.* /
+RUN chmod 744 /update-client-ips.sh
+COPY docker/hypervisor/api_client.py /
 COPY docker/hypervisor/run.sh /
 RUN chmod +x run.sh auto-generate-certs.sh
 

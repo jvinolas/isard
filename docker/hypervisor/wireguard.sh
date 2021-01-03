@@ -15,6 +15,7 @@ cat > /etc/libvirt/qemu/networks/wireguard.xml << EOF
   </ip>
        <dnsmasq:options>
         <dnsmasq:option value="dhcp-option=121,$WG_CLIENTS_NET,$GW"/>
+        <dnsmasq:option value="dhcp-script=/update-client-ips.sh"/>
       </dnsmasq:options>
 </network>
 EOF

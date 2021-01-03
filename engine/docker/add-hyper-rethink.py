@@ -22,7 +22,6 @@ while True:
         dbConnect()
         
         
-        
 
         print('Config regenerated from database...\nStarting to monitor users changes...')
         #for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
