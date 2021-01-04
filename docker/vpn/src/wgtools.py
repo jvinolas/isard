@@ -110,8 +110,8 @@ class Wg(object):
 
     def init_peers(self):
         # This will reset all vpn config on restart.
-        r.table('users').replace(r.row.without('vpn')).run()
-        r.table('hypervisors').replace(r.row.without('vpn')).run()
+        #r.table('users').replace(r.row.without('vpn')).run()
+        #r.table('hypervisors').replace(r.row.without('vpn')).run()
 
         vpn_tables = ['hypervisors','users']
         wglist_tables={}
