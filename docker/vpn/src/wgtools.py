@@ -176,13 +176,13 @@ class Wg(object):
 
     def server_config(self):
         return """[Interface]
-Address = %s
+Address = %s/%s
 SaveConfig = false
 PrivateKey = %s
 ListenPort = 443
 PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-prohibited
 
-""" % (self.server_ip,self.keys.skeys['private'])
+""" % (self.server_ip,self.server_mask,self.keys.skeys['private'])
 
 
 
