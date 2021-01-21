@@ -257,7 +257,7 @@ $(document).ready(function() {
      
     socket.on('user_quota', function(data) {
         var data = JSON.parse(data);
-        console.log('user_quota')
+        //console.log('user_quota')
 
         drawUserQuota(data);
     });
@@ -266,11 +266,11 @@ $(document).ready(function() {
     countdown ={}
     socket.on('desktop_data', function(data){
         var data = JSON.parse(data);
-        console.log('desktop_data')
+        //console.log('desktop_data')
 
         if(data.status =='Started' && 'viewer' in data && 'guest_ip' in data['viewer']){
             if(!('viewer' in table.row('#'+data.id).data()) || !('guest_ip' in table.row('#'+data.id).data())){
-                console.log('NEW IP ARRIVED!: '+data['viewer']['guest_ip'])
+                //console.log('NEW IP ARRIVED!: '+data['viewer']['guest_ip'])
                 $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
             }
         }

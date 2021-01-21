@@ -330,6 +330,9 @@ $(document).ready(function() {
 						}).get().on('pnotify.confirm', function() {
                             setViewerButtons(data['id'],socket);
 
+                            if('viewer' in data && 'guest_ip' in data['viewer']){
+                                $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+                            }
                             $('#modalOpenViewer').modal({
                                 backdrop: 'static',
                                 keyboard: false
@@ -368,6 +371,12 @@ $(document).ready(function() {
 
     socket.on(kind+'_data', function(data){
         var data = JSON.parse(data);
+        if(data.status =='Started' && 'viewer' in data && 'guest_ip' in data['viewer']){
+            if(!('viewer' in domains_table.row('#'+data.id).data()) || !('guest_ip' in domains_table.row('#'+data.id).data())){
+                //console.log('NEW IP ARRIVED!: '+data['viewer']['guest_ip'])
+                $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+            }
+        }        
         dtUpdateInsert(domains_table,data,false);
         setDomainDetailButtonsStatus(data.id, data.status);
     });
@@ -810,13 +819,19 @@ function renderDisplay(data){
       			//~ <p class="excerpt" >'+data.description+'</p> \
            		//~ </div>'
 //~ }
-                        
+
 function renderIcon(data){
 		return '<span class="xe-icon" data-pk="'+data.id+'">'+icon(data)+'</span>'
 }
 
 function renderStatus(data){
-		return data.status;
+    if('viewer' in data && 'guest_ip' in data['viewer']){
+        return data['viewer']['guest_ip']
+    }else{
+        return 'No ip'
+    }
+    
+		//return data.status;
 }
 
 function renderHypStarted(data){
