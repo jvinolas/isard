@@ -15,7 +15,7 @@ def dbConnect():
 def get_wireguard_file(peer):
     endpoint=os.environ['STATS_RETHINKDB_HOST']
     try:
-        server_public_key=r.db('isard').table('config').get(1).pluck({'vpn':{'wireguard':{'keys':{'public'}}}}).run()['vpn']['wireguard']['keys']['public']
+        server_public_key=r.db('isard').table('config').get(1).pluck({'vpn_hypers':{'wireguard':{'keys':{'public'}}}}).run()['vpn']['wireguard']['keys']['public']
     except:
         raise
     return """[Interface]
