@@ -114,6 +114,7 @@ flavour "" \
 	api \
 	backend \
 	vpn \
+        webssh \
 
 flavour hypervisor \
 	network \

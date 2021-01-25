@@ -1,0 +1,16 @@
+version: "3.5"
+services:
+  isard-webssh:
+    container_name: isard-webssh
+    image: ${DOCKER_IMAGE_PREFIX}webssh:${DOCKER_IMAGE_TAG:-latest}     
+    networks:
+      isard-vpn:
+        ipv4_address: 192.168.119.5
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - published: 444
+        target: 8080
+    restart: unless-stopped
+    env_file:
+      - .env  
