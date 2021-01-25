@@ -65,25 +65,54 @@ LOG_LEVEL=INFO
 # vpn container will get the first one by default.
 # Set a network that will allow as many clients as users you will
 # have.
-WG_CLIENTS_NET=10.200.200.0/24
+WG_USERS_NET=10.0.0.0/16
+WG_USERS_PORT=443
+WG_HYPERS_NET=10.1.0.0/24
+WG_HYPERS_PORT=4443
 
 ## Net between vpn container and isard-hypervisor container only
-## Only two hosts needed so you can use a /30 mask always.
-## Take care of setting peers inside the defined subnet!
-WG_HYPER_NET=192.168.119.0/29
-# WG peer IP
+## Only two hosts needed per host. One is for wireguard and the
+## next one for the hyper.
+## Take care of setting peers inside the defined subnet and not
+## overlap them in your infrastructure!
+WG_HYPER_NET=192.168.119.0/24
+# WG peer IP. Pair number. The hypervisor will get the
+# next one.
 WG_HYPER_NET_WG_PEER=192.168.119.2
 # Hypervisor peer IP
 WG_HYPER_NET_HYPER_PEER=192.168.119.3
+
+## Hyper 2
+#WG_HYPER_NET_WG_PEER=192.168.119.4
+# Hypervisor peer IP
+#WG_HYPER_NET_HYPER_PEER=192.168.119.5
+
+## Hyper 3
+#WG_HYPER_NET_WG_PEER=192.168.119.6
+# Hypervisor peer IP
+#WG_HYPER_NET_HYPER_PEER=192.168.119.7
+
 
 # Hyper guests network.
 ## When using multiple hypervisors take care to define non
 ## overlapping ranges here for each hypervisor.
 ## Allways leave an initial range free for server desktops that
 ## will have fixed ip/mac
+## The whole range available is 192.168.128/20 (last: 192.168.143.254)
+WG_HYPER_GUEST_SUPERNET=192.168.128.0/20
+# isard-hypervisor
 WG_HYPER_GUESTNET=192.168.128.0/23
 WG_HYPER_GUESTNET_DHCP_START=192.168.128.33
 WG_HYPER_GUESTNET_DHCP_END=192.168.129.254
+## hyper2
+#WG_HYPER_GUESTNET=192.168.130.0/23
+#WG_HYPER_GUESTNET_DHCP_START=192.168.130.33
+#WG_HYPER_GUESTNET_DHCP_END=192.168.131.254
+## hyper3
+#WG_HYPER_GUESTNET=192.168.132.0/23
+#WG_HYPER_GUESTNET_DHCP_START=192.168.132.33
+#WG_HYPER_GUESTNET_DHCP_END=192.168.132.254
+
 
 # HYPERVISOR
 ## Uncomment to map host interface name inside hypervisor container.

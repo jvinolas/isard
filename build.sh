@@ -115,6 +115,10 @@ flavour "" \
 	backend \
 	vpn \
 
+flavour vpnhypers \
+	network \
+	vpnhypers \
+
 flavour hypervisor \
 	network \
 	video \

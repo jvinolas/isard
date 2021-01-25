@@ -7,11 +7,9 @@ from rethinkdb.errors import ReqlDriverError, ReqlTimeoutError
 
 from subprocess import check_call, check_output
 import ipaddress
-import traceback
 
 class Keys(object):
-    def __init__(self,interface='wg0'):
-        self.interface=interface
+    def __init__(self):
         self.wg = '/usr/bin/wg'
         self.skeys={'private':False, 'public':False}
         self.update_clients=False
@@ -43,9 +41,9 @@ class Keys(object):
         update_clients=False
 
         try:
-            with open("/certs/"+self.interface+"_private.key", "r") as f:
+            with open("/certs/server_private.key", "r") as f:
                 actual_private_key=f.read()
-            with open("/certs/"+self.interface+"_public.key", "r") as f:
+            with open("/certs/server_public.key", "r") as f:
                 actual_public_key=f.read()
         except FileNotFoundError:
             self.gen_server_keys()
@@ -57,16 +55,16 @@ class Keys(object):
             log.error('Server read keys internal error: \n'+traceback.format_exc())
             exit(1)
 
-        old_key=r.table('config').get(1).pluck('vpn_'+self.interface).run()
+        old_key=r.table('config').get(1).pluck('vpn').run()
 
-        if 'vpn' not in old_key.keys() or actual_private_key != old_key['vpn_'+self.interface]['wireguard']['keys']['private']:
-            r.table('config').get(1).update({'vpn_'+self.interface:{'wireguard':{'keys':{'private':actual_private_key,
+        if 'vpn' not in old_key.keys() or actual_private_key != old_key['vpn']['wireguard']['keys']['private']:
+            r.table('config').get(1).update({'vpn':{'wireguard':{'keys':{'private':actual_private_key,
                                                                         'public':actual_public_key}}}}).run()
             update_clients=True
             try:
-                with open("/certs/"+self.interface+"_private.key", "w") as f:
+                with open("/certs/server_private.key", "w") as f:
                     f.write(actual_private_key)
-                with open("/certs/"+self.interface+"_public.key", "w") as f:
+                with open("/certs/server_public.key", "w") as f:
                     f.write(actual_public_key)
             except Exception as e:
                 print('Serve keys write error: \n'+traceback.format_exc())
@@ -79,16 +77,12 @@ class Keys(object):
         
 class Wg(object):
 
-    def __init__(self,interface='wg0',clients_net='10.0.0.0/24',table='users',server_port='443',allowed_client_nets='0.0.0.0/0'):
-        self.interface=interface
-        self.table=table
-        self.server_port=server_port
-        self.allowed_client_nets=allowed_client_nets
+    def __init__(self):
         # Get actual server keys or generate new ones
-        self.keys=Keys(interface)
+        self.keys=Keys()
 
-        self.server_mask=clients_net.split('/')[1]
-        self.server_net=ipaddress.ip_network(clients_net, strict=False)
+        self.server_mask=os.environ['WG_USERS_NET'].split('/')[1]
+        self.server_net=ipaddress.ip_network(os.environ['WG_USERS_NET'], strict=False)
         # Get first one from range for us!
         self.server_ip=str(self.server_net[1])
 
@@ -102,44 +96,49 @@ class Wg(object):
     def init_server(self):
         ## Server config
         try:
-            check_output(('/usr/bin/wg-quick', 'down', self.interface), text=True).strip()
+            check_output(('/usr/bin/wg-quick', 'down', 'wg0'), text=True).strip()
         except:
             None
         self.config=self.server_config()
         #for k,v in self.peers.items():
         #    self.set_iptables(v)
         #    self.config=self.config+self.gen_peer_config(v)
-        with open("/etc/wireguard/"+self.interface+".conf", "w") as f:
+        with open("/etc/wireguard/wg0.conf", "w") as f:
             f.write(self.config)
-        check_output(('/usr/bin/wg-quick', 'up', self.interface), text=True).strip()
+        check_output(('/usr/bin/wg-quick', 'up', 'wg0'), text=True).strip()
         ## End server config
 
     def init_peers(self):
         # This will reset all vpn config on restart.
-        r.table(self.table).replace(r.row.without('vpn')).run()
+        #r.table('users').replace(r.row.without('vpn')).run()
         #r.table('hypervisors').replace(r.row.without('vpn')).run()
 
-        wglist = list(r.table(self.table).pluck('id','vpn').run())
-        self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
+        vpn_tables = ['hypervisors']
+        wglist_tables={}
+        for table in vpn_tables:
+            wglist_tables[table] = list(r.table(table).pluck('id','vpn').run())
+            self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist_tables[table] if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
 
-        create_peers=[]
-        if self.keys.update_clients == True:
-            print('Server key changed. Generating new client keys for all users...')
-        for peer in wglist:
-            new_peer=False
-            if self.keys.update_clients == True and 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
-                new_peer=peer
-                new_peer['vpn']['wireguard']['keys']=self.keys.new_client_keys()
-                create_peers.append(new_peer)
-            if 'vpn' not in peer.keys():
-                new_peer=self.gen_new_peer(peer)
-                create_peers.append(new_peer)
-            if new_peer == False:
-                self.up_peer(peer)
-            else:
-                self.up_peer(new_peer)
-        pprint(create_peers)
-        r.table(self.table).insert(create_peers, conflict='update').run()
+        for table in vpn_tables:
+            wglist = wglist_tables[table]
+            create_peers=[]
+            if self.keys.update_clients == True:
+                print('Server key changed. Generating new client keys for all users...')
+            for peer in wglist:
+                new_peer=False
+                if self.keys.update_clients == True and 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
+                    new_peer=peer
+                    new_peer['vpn']['wireguard']['keys']=self.keys.new_client_keys()
+                    create_peers.append(new_peer)
+                if 'vpn' not in peer.keys():
+                    new_peer=self.gen_new_peer(peer)
+                    create_peers.append(new_peer)
+                if new_peer == False:
+                    self.up_peer(peer)
+                else:
+                    self.up_peer(new_peer)
+            pprint(create_peers)
+            r.table(table).insert(create_peers, conflict='update').run()
 
     def gen_new_peer(self,peer):
         return {'id':peer['id'],
@@ -147,10 +146,10 @@ class Wg(object):
                         'wireguard':
                             {'Address':self.gen_client_ip(),
                             'keys':self.keys.new_client_keys(),
-                            'AllowedIPs':self.allowed_client_nets}}} 
+                            'AllowedIPs':'0.0.0.0/0'}}} 
 
     def up_peer(self,peer):
-        check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', peer['vpn']['wireguard']['Address']), text=True).strip()  
+        check_output(('/usr/bin/wg', 'set', 'wg0', 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', peer['vpn']['wireguard']['Address']), text=True).strip()  
 
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
@@ -160,7 +159,7 @@ class Wg(object):
 
     def remove_peer(self,peer):
         if 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
-            check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'remove'), text=True).strip()  
+            check_output(('/usr/bin/wg', 'set', 'wg0', 'peer', peer['vpn']['wireguard']['keys']['public'], 'remove'), text=True).strip()  
 
 
     def gen_client_ip(self):
@@ -180,10 +179,10 @@ class Wg(object):
 Address = %s/%s
 SaveConfig = false
 PrivateKey = %s
-ListenPort = %s
+ListenPort = 443
 PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-prohibited
 
-""" % (self.server_ip,self.server_mask,self.keys.skeys['private'],self.server_port)
+""" % (self.server_ip,self.server_mask,self.keys.skeys['private'])
 
 
 

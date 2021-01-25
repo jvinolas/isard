@@ -50,7 +50,7 @@ class isardViewer():
             wgdata = r.table('users').get(current_user.id).pluck('vpn').run(db.conn) 
             if wgdata == None or 'vpn' not in wgdata.keys():
                 return False
-            if app.wireguard_keys == False:
+            if app.wireguard_users_keys == False:
                 log.error('There is no wireguard keys in webapp config yet. You may need to restart webapp.')
                 return False
             if get_cookie:
@@ -119,7 +119,7 @@ PublicKey = %s
 Endpoint = %s:443
 AllowedIPs = %s
 PersistentKeepalive = 21
-""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],app.wireguard_keys['public'],domain['viewer']['proxy_video'],peer['vpn']['wireguard']['AllowedIPs'])
+""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],app.wireguard_users_keys['public'],domain['viewer']['proxy_video'],peer['vpn']['wireguard']['AllowedIPs'])
 
     def get_spice_file(self, domain, port):
         try:

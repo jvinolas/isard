@@ -18,7 +18,8 @@ while True:
         # App was restarted or db was lost. Just sync peers before get into changes.
         print('Checking initial config...')
         dbConnect()
-        wg=Wg()
+        wg_users=Wg(interface='users',clients_net=os.environ['WG_USERS_NET'],table='users',server_port=os.environ['WG_USERS_PORT'],allowed_client_nets=os.environ['WG_HYPER_GUEST_SUPERNET'])
+        wg_hypers=Wg(interface='hypers',clients_net=os.environ['WG_HYPERS_NET'],table='hypervisors',server_port=os.environ['WG_HYPERS_PORT'],allowed_client_nets=os.environ['WG_HYPER_NET'])
 
         print('Config regenerated from database...\nStarting to monitor users changes...')
         #for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
@@ -26,25 +27,37 @@ while True:
             r.table('hypervisors').pluck('id','vpn').merge({'table':'hypers'}).changes(include_initial=False)).run():
             if user['new_val'] == None:
                 ### User was deleted
-                print('User deleted:')
-                wg.remove_peer(user['old_val'])
+                print('Deleted:')
+                if data['old_val']['table'] == 'users':
+                    wg_users.remove_peer(data['old_val'])
+                else:
+                    wg_hypers.remove_peer(data['old_val'])
                 continue
             if user['old_val'] == None:
                 ### New user
-                print('New user '+user['new_val']['id']+'found...')
-                wg.add_peer(user['new_val'])
+                print('New: '+data['new_val']['id']+'found...')
+                if data['old_val']['table'] == 'users':
+                    wg_users.add_peer(data['new_val'])
+                else:
+                    wg_hypers.add_peer(data['new_val'])
             else:
-                ### Updated vpn user config
-                if 'vpn' not in user['old_val']: 
+                ### Updated vpn data config
+                if 'vpn' not in data['old_val']: 
                     continue #Was just added
 
-                if user['old_val']['vpn']['iptables'] != user['new_val']['vpn']['iptables']:
+                if user['old_val']['vpn']['iptables'] != data['new_val']['vpn']['iptables']:
                     print('Modified iptables')
-                    wg.set_iptables(user['new_val'])
+                    if data['old_val']['table'] == 'users':
+                        wg_users.set_iptables(data['new_val'])
+                    else:
+                        wg_hypers.set_iptables(data['new_val'])
                 else:
                     print('Modified user wireguard config')
                     # who else could modify the wireguard config?? 
-                    wg.update_peer(user['new_val'])
+                    if data['old_val']['table'] == 'users':
+                        wg_users.update_peer(data['new_val'])
+                    else:
+                        wg_hypers.update_peer(data['new_val'])
 
     except ReqlDriverError:
         print('Users: Rethink db connection lost!')
@@ -55,5 +68,5 @@ while True:
         log.error('Users internal error: \n'+traceback.format_exc())
         exit(1)
 
-print('Users ENDED!!!!!!!')
-log.error('Users ENDED!!!!!!!')  
+print('Thread ENDED!!!!!!!')
+log.error('Thread ENDED!!!!!!!')  

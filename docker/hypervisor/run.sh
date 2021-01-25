@@ -5,7 +5,7 @@ sh auto-generate-certs.sh
 echo "Setting wireguard.xml network for $WG_HYPER_GUESTNET"
 sh wireguard.sh
 
-ip r a $WG_CLIENTS_NET via ${WG_HYPER_NET_WG_PEER}
+ip r a $WG_USERS_NET via ${WG_HYPER_NET_WG_PEER}
 
 env > /tmp/env
 
