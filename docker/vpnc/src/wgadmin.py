@@ -24,10 +24,10 @@ PrivateKey = %s
 
 [Peer]
 PublicKey = %s
-Endpoint = %s:443
+Endpoint = %s:%s
 AllowedIPs = %s
 PersistentKeepalive = 21
-""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],server_public_key,endpoint,peer['vpn']['wireguard']['AllowedIPs'])
+""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],server_public_key,endpoint,os.environ['WG_HYPERS_PORT'],peer['vpn']['wireguard']['AllowedIPs'])
 
 def init_client(peer):
     ## Server config
