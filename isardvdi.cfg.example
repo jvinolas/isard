@@ -75,39 +75,48 @@ WG_HYPERS_PORT=4443
 ## next one for the hyper.
 ## Take care of setting peers inside the defined subnet and not
 ## overlap them in your infrastructure!
-WG_HYPER_NET=192.168.119.0/24
-# WG peer IP. Pair number. The hypervisor will get the
-# next one.
+WG_HYPER_NET=192.168.119.0/29
+## WG peer IP.
+## Can be any usable ip whithin WG_HYPER_NET but not the first one
+## as the first usable one will be the gateway for docker (not used
+## but docker without swarm mode doesn't allow net without gw).
 WG_HYPER_NET_WG_PEER=192.168.119.2
 # Hypervisor peer IP
 WG_HYPER_NET_HYPER_PEER=192.168.119.3
 
 ## Hyper 2
-#WG_HYPER_NET_WG_PEER=192.168.119.4
-# Hypervisor peer IP
-#WG_HYPER_NET_HYPER_PEER=192.168.119.5
+#WG_HYPER_NET=192.168.119.8/29
+#WG_HYPER_NET_WG_PEER=192.168.119.10
+#WG_HYPER_NET_HYPER_PEER=192.168.119.11
 
 ## Hyper 3
-#WG_HYPER_NET_WG_PEER=192.168.119.6
-# Hypervisor peer IP
-#WG_HYPER_NET_HYPER_PEER=192.168.119.7
+#WG_HYPER_NET=192.168.119.16/29
+#WG_HYPER_NET_WG_PEER=192.168.119.18
+#WG_HYPER_NET_HYPER_PEER=192.168.119.19
 
 
 # Hyper guests network.
 ## When using multiple hypervisors take care to define non
 ## overlapping ranges here for each hypervisor.
-## Allways leave an initial range free for server desktops that
+## May leave an initial range free for server desktops that
 ## will have fixed ip/mac
-## The whole range available is 192.168.128/20 (last: 192.168.143.254)
+
+## This net must include all the possible libvirt guests DHCP
+## subnetworks. It will be set as the wireguard clients (users)
+## route to the guests at their home device.
 WG_HYPER_GUEST_SUPERNET=192.168.128.0/20
-# isard-hypervisor
+## And this is the DHCP server configuration parameters for guests
+## in this hypervisor
+## isard-hypervisor
 WG_HYPER_GUESTNET=192.168.128.0/23
 WG_HYPER_GUESTNET_DHCP_START=192.168.128.33
 WG_HYPER_GUESTNET_DHCP_END=192.168.129.254
+
 ## hyper2
 #WG_HYPER_GUESTNET=192.168.130.0/23
 #WG_HYPER_GUESTNET_DHCP_START=192.168.130.33
 #WG_HYPER_GUESTNET_DHCP_END=192.168.131.254
+
 ## hyper3
 #WG_HYPER_GUESTNET=192.168.132.0/23
 #WG_HYPER_GUESTNET_DHCP_START=192.168.132.33

@@ -4,7 +4,6 @@ networks:
     external: false
     name: isard-network
   isard-vpn:
-    driver: bridge
     ipam:
       driver: default
       config:
