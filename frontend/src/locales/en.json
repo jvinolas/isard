@@ -108,6 +108,10 @@
                     "title": "Error",
                     "description": "We couldn't start the virtual desktop due to an error"
                 },
+                "start-timeout": {
+                    "title": "Timeout",
+                    "description": "The desktop is starting, this might take a few minutes"
+                },
                 "open-error": {
                     "title": "Error",
                     "description": "We couldn't open the virtual desktop due to an error"
@@ -115,6 +119,10 @@
                 "stop-error": {
                     "title": "Error",
                     "description": "We couldn't stop the virtual desktop due to an error"
+                },
+                "stop-timeout": {
+                    "title": "Timeout",
+                    "description": "The desktop is stopping, this might take a few minutes"
                 },
                 "delete-error": {
                     "title": "Error",

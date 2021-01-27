@@ -94,6 +94,13 @@ export default {
             if (e.response.status === 503) {
               reject(e)
               router.push({ name: 'Maintenance' })
+            } else if (e.response.status === 408) {
+              resolve(
+                toast(
+                  i18n.t(`views.select-template.error.${data.action}-timeout.title`),
+                  i18n.t(`views.select-template.error.${data.action}-timeout.description`)
+                )
+              )
             } else if (e.response.status === 401 || e.response.status === 403) {
               this._vm.$snotify.clear()
               reject(e)
