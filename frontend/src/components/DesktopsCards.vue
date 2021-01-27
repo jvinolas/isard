@@ -106,7 +106,7 @@
           id="desktops-table" class="text-left" key="desktops_table">
           <!-- Non persistent desktops -->
           <template #cell(action)="data">
-            <b-button v-if="data.item.state" variant="danger" @click="removeDesktop()">
+            <b-button v-if="data.item.state" variant="danger" @click="deleteDesktop(data.item.id)">
               <font-awesome-icon :icon="['fas', 'trash']" class="mr-2"/>
               {{ $t('views.select-template.remove') }}
             </b-button>
