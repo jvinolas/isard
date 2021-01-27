@@ -38,11 +38,13 @@
           <h1 class="mt-4">{{ $t('views.select-template.which-template') }}</h1>
           <div v-if="persistentDesktops.length > 0">
             <h2 class="mt-2">{{ $t('views.select-template.persistent') }}</h2>
-            <DesktopsCards :desktops="persistentDesktops" :persistent="true" :gridView="gridView" :icons="icons" :status="status"/>
+            <DesktopsCards :templates="user_templates" :desktops="persistentDesktops"
+            :persistent="true" :gridView="gridView" :icons="icons" :status="status"/>
           </div>
           <div v-if="nonpersistentDesktops.length > 0">
             <h2 class="mt-2">{{ $t('views.select-template.volatile') }}</h2>
-            <DesktopsCards :desktops="nonpersistentDesktops" :persistent="false" :gridView="gridView" :icons="icons" :status="status"/>
+            <DesktopsCards :templates="user_templates" :desktops="nonpersistentDesktops"
+            :persistent="false" :gridView="gridView" :icons="icons" :status="status"/>
           </div>
         </div>
       </b-col>

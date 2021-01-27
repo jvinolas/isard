@@ -7,6 +7,7 @@ import { toast } from '@/store/index.js'
 
 export default {
   state: {
+    viewer: cookies.getCookie('viewer') || '',
     desktops: [],
     desktops_loaded: false
   },
@@ -16,12 +17,18 @@ export default {
     },
     getDesktopsLoaded: state => {
       return state.desktops_loaded
+    },
+    getViewer: state => {
+      return state.viewer
     }
   },
   mutations: {
     setDesktops: (state, desktops) => {
       state.desktops = desktops
       state.desktops_loaded = true
+    },
+    setViewer: (state, viewer) => {
+      state.viewer = viewer
     }
   },
   actions: {
@@ -108,6 +115,8 @@ export default {
         i18n.t('views.select-template.notification.loading.description'),
         i18n.t('views.select-template.notification.loading.title'),
         () => new Promise((resolve, reject) => {
+          cookies.setCookie('viewer', data.viewer)
+          context.commit('setViewer', data.viewer)
           apiAxios.get(`/desktop/${data.desktopId}/viewer/${data.viewer}`).then(response => {
             const el = document.createElement('a')
             if (data.viewer === 'browser') {

@@ -8,19 +8,30 @@
           <b-card v-for="desktop in desktops" :key="desktop.id" class="shadow persistent_desktop m-3 border-secondary" no-body>
             <b-card-body>
               <font-awesome-icon size="4x" :icon="icons[desktop.icon]" class="mb-2"/>
-              <b-card-title><h6>{{ desktop.name }}</h6></b-card-title>
+              <b-card-title>
+                <h6>
+                  <b-icon v-if="desktop.description" v-b-tooltip.hover :title="desktop.description" icon="info-circle" class="mr-1"></b-icon>
+                  {{ desktop.name }}
+                </h6>
+              </b-card-title>
               <b-card-sub-title class="mb-2">
                 <small>{{status[desktop.state.toLowerCase()].text}}</small>
               </b-card-sub-title>
               <!-- Viewers button/drowpdown -->
               <span v-if="desktop.state.toLowerCase() == 'started'">
-                <b-button variant="primary" class="m-1" v-if="desktop.viewers.length === 1"
+                <b-button v-if="desktop.viewers.length === 1" variant="primary" class="m-1"
                 @click="openDesktop({desktopId: desktop.id, viewer: desktop.viewers[0]})">
                   {{desktop.viewers[0]}}
                 </b-button>
-                <b-dropdown v-else variant="primary"
-                :text="$t('views.select-template.viewers')" class="m-1">
-                  <b-dropdown-item v-for="viewer in desktop.viewers" :key="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">{{viewer}}</b-dropdown-item>
+                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
+                :text="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
+                  <b-dropdown-item v-for="dkpviewer in desktop.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
+                    @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                </b-dropdown>
+                <b-dropdown v-else variant="primary" class="m-1"
+                :text="$t('views.select-template.viewers')">
+                  <b-dropdown-item v-for="dkpviewer in desktop.viewers" :key="dkpviewer"
+                  @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
                 </b-dropdown>
               </span>
               <!-- Change status button -->
@@ -31,7 +42,10 @@
               </b-button>
             </b-card-body>
             <b-card-footer>
-              <small><b>{{$t('views.select-template.template')}}:</b> {{desktop.template}}</small>
+              <small>
+                <b>{{$t('views.select-template.template')}}:</b>
+                {{templates.filter(template => template.id ===  desktop.template)[0].name}}
+              </small>
             </b-card-footer>
           </b-card>
         </b-row>
@@ -44,7 +58,13 @@
                   <font-awesome-icon class="mt-2" size="4x" :icon="icons[desktop.icon]" />
                 </b-col>
                 <b-col cols="8">
-                  <b-card-title><h6>{{ desktop.name }}</h6></b-card-title>
+                  <b-card-title>
+                    <h6>
+                      <b-icon v-if="desktop.description" v-b-tooltip.hover :title="desktop.description" icon="info-circle" class="mr-1">
+                      </b-icon>
+                      {{ desktop.name }}
+                    </h6>
+                  </b-card-title>
                   <b-card-sub-title class="mb-2" v-if="desktop.state">
                     <small>{{status[desktop.state.toLowerCase()].text}}</small>
                   </b-card-sub-title>
@@ -54,9 +74,15 @@
                     @click="openDesktop({desktopId: desktop.id, viewer: desktop.viewers[0]})">
                       {{desktop.viewers[0]}}
                     </b-button>
+                    <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
+                    :text="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
+                      <b-dropdown-item v-for="dkpviewer in desktop.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
+                        @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                    </b-dropdown>
                     <b-dropdown v-else variant="primary" size="sm"
                     :text="$t('views.select-template.viewers')" class="m-1">
-                      <b-dropdown-item v-for="viewer in desktop.viewers" :key="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">{{viewer}}</b-dropdown-item>
+                      <b-dropdown-item v-for="dkpviewer in desktop.viewers" :key="dkpviewer"
+                      @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
                     </b-dropdown>
                     <b-button variant="danger" size="sm" @click="deleteDesktop(desktop.id)">
                       <font-awesome-icon :icon="['fas', 'trash']" class="mr-2"/>
@@ -72,7 +98,10 @@
               </b-row>
             </b-card-body>
             <b-card-footer>
-              <small><b>{{$t('views.select-template.template')}}:</b> {{desktop.template ? desktop.template : desktop.id}}</small>
+              <small>
+                <b>{{$t('views.select-template.template')}}:</b>
+                {{desktop.state ? templates.filter(template => template.id ===  desktop.template)[0].name : desktop.name}}
+              </small>
             </b-card-footer>
           </b-card>
         </b-row>
@@ -90,10 +119,22 @@
             </b-button>
           </template>
           <template #cell(viewers)="data">
-            <b-dropdown v-if="data.item.state.toLowerCase() == 'started'" variant="primary"
-            :text="$t('views.select-template.viewers')">
-              <b-dropdown-item v-for="viewer in data.item.viewers" :key="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">{{viewer}}</b-dropdown-item>
-            </b-dropdown>
+            <div v-if="data.item.state.toLowerCase() == 'started'">
+              <b-button v-if="data.item.viewers.length === 1" variant="primary" class="m-1"
+                @click="openDesktop({desktopId: data.item.id, viewer: data.item.viewers[0]})">
+                  {{data.item.viewers[0]}}
+                </b-button>
+                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
+                :text="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">
+                  <b-dropdown-item v-for="dkpviewer in data.item.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
+                    @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                </b-dropdown>
+                <b-dropdown v-else variant="primary" class="m-1"
+                :text="$t('views.select-template.viewers')">
+                  <b-dropdown-item v-for="dkpviewer in data.item.viewers" :key="dkpviewer"
+                  @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                </b-dropdown>
+            </div>
           </template>
           <template #cell(name)="data">
             <col style="width: 10cm" class="d-flex align-items-center">
@@ -116,10 +157,22 @@
             </b-button>
           </template>
           <template #cell(viewers)="data">
-            <b-dropdown v-if="data.item.state && data.item.state.toLowerCase() == 'started'" variant="primary"
-            :text="$t('views.select-template.viewers')">
-              <b-dropdown-item v-for="viewer in data.item.viewers" :key="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">{{viewer}}</b-dropdown-item>
-            </b-dropdown>
+            <div v-if="data.item.state && data.item.state.toLowerCase() == 'started'">
+              <b-button v-if="data.item.viewers.length === 1" variant="primary" class="m-1"
+                @click="openDesktop({desktopId: data.item.id, viewer: data.item.viewers[0]})">
+                  {{data.item.viewers[0]}}
+                </b-button>
+                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
+                :text="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">
+                  <b-dropdown-item v-for="dkpviewer in data.item.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
+                    @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                </b-dropdown>
+                <b-dropdown v-else variant="primary" class="m-1"
+                :text="$t('views.select-template.viewers')">
+                  <b-dropdown-item v-for="dkpviewer in data.item.viewers" :key="dkpviewer"
+                  @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                </b-dropdown>
+            </div>
           </template>
           <template #cell(name)="data">
             <col style="width: 10cm" class="d-flex align-items-center">
@@ -143,6 +196,10 @@ import { mapActions } from 'vuex'
 
 export default {
   props: {
+    templates: {
+      required: true,
+      type: Array
+    },
     desktops: {
       required: true,
       type: Array
@@ -174,6 +231,11 @@ export default {
       const data = new FormData()
       data.append('template', template)
       this.$store.dispatch('createDesktop', data)
+    }
+  },
+  computed: {
+    viewer () {
+      return this.$store.getters.getViewer
     }
   },
   data () {
