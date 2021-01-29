@@ -85,18 +85,18 @@
                 "subtitle": "If you think this is an error, please contact the administrator"
             },
             "which-template": "Which desktop do you want to use?",
-            "persistent": "Your desktops",
+            "persistent": "Persistent desktops",
             "volatile": "Temporal desktops",
             "viewers": "Viewers",
             "remove": "Remove",
             "notification": {
                 "loading": {
                     "title": "Loading",
-                    "description": "Waiting for server response."
+                    "description": "Waiting for server response"
                 },
                 "downloaded": {
                     "title": "Downloaded",
-                    "description": "The desktop has been downloaded successfully."
+                    "description": "The desktop has been downloaded successfully"
                 }
             },
             "error": {
