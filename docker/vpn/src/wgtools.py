@@ -89,6 +89,7 @@ class Wg(object):
 
         self.server_mask=clients_net.split('/')[1]
         self.server_net=ipaddress.ip_network(clients_net, strict=False)
+
         # Get first one from range for us!
         self.server_ip=str(self.server_net[1])
 
@@ -117,9 +118,10 @@ class Wg(object):
     def init_peers(self):
         # This will reset all vpn config on restart.
         r.table(self.table).replace(r.row.without('vpn')).run()
-        #r.table('hypervisors').replace(r.row.without('vpn')).run()
+        #####r.table('hypervisors').replace(r.row.without('vpn')).run()
 
         wglist = list(r.table(self.table).pluck('id','vpn').run())
+        if self.table == 'hypervisors': wglist = [d for d in wglist if d['id'] != 'isard-hypervisor']
         self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
 
         create_peers=[]
@@ -157,15 +159,16 @@ class Wg(object):
         self.up_peer(new_peer)
         r.table('users').insert(new_peer, conflict='update').run()
 
-
     def remove_peer(self,peer):
         if 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
             check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'remove'), text=True).strip()  
 
-
     def gen_client_ip(self):
         next_ip = str(next(host for host in self.server_net.hosts() if str(host) not in self.clients_reserved_ips))
         self.clients_reserved_ips.append(next_ip)
+
+        if self.table == 'hypervisors':
+            next_ip=next_ip+','+os.environ['WG_HYPER_GUESTNET'] 
         return next_ip
  
     def gen_peer_config(self,peer):
@@ -185,10 +188,6 @@ PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-pro
 
 """ % (self.server_ip,self.server_mask,self.keys.skeys['private'],self.server_port)
 
-
-
-
-
     def client_config(self,peer):
         return """[Interface]
 Address = %s
@@ -200,4 +199,33 @@ Endpoint = server:443
 AllowedIPs = 192.168.128.0/22
 PersistentKeepalive = 21
 """ % (peer['vpn']['wireguard']['AllowedIPs'],peer['vpn']['wireguard']['keys']['private'],self.keys.skeys['public'])
+
+# WireGuard introduces the concepts of Endpoints, Peers and AllowedIPs. 
+# A peer is a remote host and is identified by its public key. 
+# Each peer has a list of AllowedIPs. 
+# From the server’s point of view, the AllowedIPs are IPs that a peer 
+# is allowed to use as source IP addresses. For the client, they work 
+# as a sort of routing table, determining which peer a packet should 
+# be encrypted for. If a peer sends a packet with a source IP that is
+# not in the list of AllowedIPs on the server, then the packet will be
+# simply dropped on the server’s side, for example. An endpoint is a
+# pair of IP address (or hostname) and port of a peer. It is automatically
+# updated to the most recent source IP address and port of correctly
+# authenticated packets from the peer. 
+# This means that a peer that is for example jumping between mobile
+# networks (and whose external IP address changes) will still be able
+# to receive incoming traffic because its endpoint will be updated
+# whenever he sends an authenticated message to the server. 
+# This is possible because the peer is identified by its public key.
+
+
+
+#    def set_routing(self,hypervisor):
+#        nparent = ipaddress.ip_network(self.allowed_client_nets, strict=False)
+#        dhcpsubnets=list(nparent.subnets(new_prefix=23))
+#        if hypervisor=0:
+#            route='ip r a '+str(dhcpsubnets[-1])+' via '+str(dhcpsubnets[-1].hosts()[3])
+#        else:
+#        [hypervisor]
+#        [IPv4Network('192.168.128.0/23'), IPv4Network('192.168.130.0/23'), IPv4Network('192.168.132.0/23'), IPv4Network('192.168.134.0/23'), IPv4Network('192.168.136.0/23'), IPv4Network('192.168.138.0/23'), IPv4Network('192.168.140.0/23'), IPv4Network('192.168.142.0/23')]
 

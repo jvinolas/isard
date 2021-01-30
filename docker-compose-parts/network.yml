@@ -4,7 +4,3 @@ networks:
     external: false
     name: isard-network
   isard-vpn:
-    ipam:
-      driver: default
-      config:
-      - subnet:  ${WG_HYPER_NET}
