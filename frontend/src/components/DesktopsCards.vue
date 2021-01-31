@@ -21,12 +21,22 @@
               <span v-if="desktop.state.toLowerCase() == 'started'">
                 <b-button v-if="desktop.viewers.length === 1" variant="primary" class="m-1"
                 @click="openDesktop({desktopId: desktop.id, viewer: desktop.viewers[0]})">
-                  {{desktop.viewers[0]}}
+                  <i18n path="views.select-template.viewer">
+                    <template v-slot:name>
+                      {{desktop.viewers[0]}}
+                    </template>
+                  </i18n>
                 </b-button>
-                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
-                :text="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
+                <b-dropdown v-else-if="viewer" variant="primary" split  class="m-1"
+                :text="viewerText" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
                   <b-dropdown-item v-for="dkpviewer in desktop.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
-                    @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                    @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">
+                    <i18n path="views.select-template.viewer">
+                      <template v-slot:name>
+                        {{dkpviewer}}
+                      </template>
+                    </i18n>
+                  </b-dropdown-item>
                 </b-dropdown>
                 <b-dropdown v-else variant="primary" class="m-1"
                 :text="$t('views.select-template.viewers')">
@@ -62,7 +72,7 @@
                     <h6>
                       <b-icon v-if="desktop.description" v-b-tooltip.hover :title="desktop.description" icon="info-circle" class="mr-1">
                       </b-icon>
-                      {{ desktop.name }}
+                      {{desktop.state ? templates.filter(template => template.id ===  desktop.template)[0].name : desktop.name}}
                     </h6>
                   </b-card-title>
                   <b-card-sub-title class="mb-2" v-if="desktop.state">
@@ -72,12 +82,22 @@
                   <span v-if="desktop.state">
                     <b-button variant="primary" class="m-1" v-if="desktop.viewers.length === 1"
                     @click="openDesktop({desktopId: desktop.id, viewer: desktop.viewers[0]})">
-                      {{desktop.viewers[0]}}
+                      <i18n path="views.select-template.viewer">
+                        <template v-slot:name>
+                          {{desktop.viewers[0]}}
+                        </template>
+                      </i18n>
                     </b-button>
-                    <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
-                    :text="viewer" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
+                    <b-dropdown v-else-if="viewer" variant="primary" split class="m-1"
+                    :text="viewerText" @click="openDesktop({desktopId: desktop.id, viewer: viewer})">
                       <b-dropdown-item v-for="dkpviewer in desktop.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
-                        @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+                      @click="openDesktop({desktopId: desktop.id, viewer: dkpviewer})">
+                        <i18n path="views.select-template.viewer">
+                          <template v-slot:name>
+                            {{dkpviewer}}
+                          </template>
+                        </i18n>
+                      </b-dropdown-item>
                     </b-dropdown>
                     <b-dropdown v-else variant="primary" size="sm"
                     :text="$t('views.select-template.viewers')" class="m-1">
@@ -97,12 +117,6 @@
                 </b-col>
               </b-row>
             </b-card-body>
-            <b-card-footer>
-              <small>
-                <b>{{$t('views.select-template.template')}}:</b>
-                {{desktop.state ? templates.filter(template => template.id ===  desktop.template)[0].name : desktop.name}}
-              </small>
-            </b-card-footer>
           </b-card>
         </b-row>
       </transition-group>
@@ -112,39 +126,41 @@
         id="desktops-table" class="text-left" key="desktops_table">
           <!-- Persistent desktops -->
           <template #cell(action)="data">
-            <b-button :variant="status[data.item.state.toLowerCase()].variant"
-            @click="changeDesktopStatus({action: status[data.item.state.toLowerCase()].action, desktopId: data.item.id})">
-              <font-awesome-icon :icon="status[data.item.state.toLowerCase()].icon" class="mr-2"/>
-              {{status[data.item.state.toLowerCase()].actionText}}
-            </b-button>
+              <b-button :variant="status[data.item.state.toLowerCase()].variant"
+              @click="changeDesktopStatus({action: status[data.item.state.toLowerCase()].action, desktopId: data.item.id})">
+                <font-awesome-icon :icon="status[data.item.state.toLowerCase()].icon" class="mr-2"/>
+                {{status[data.item.state.toLowerCase()].actionText}}
+              </b-button>
           </template>
           <template #cell(viewers)="data">
             <div v-if="data.item.state.toLowerCase() == 'started'">
-              <b-button v-if="data.item.viewers.length === 1" variant="primary" class="m-1"
-                @click="openDesktop({desktopId: data.item.id, viewer: data.item.viewers[0]})">
-                  {{data.item.viewers[0]}}
-                </b-button>
-                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
-                :text="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">
-                  <b-dropdown-item v-for="dkpviewer in data.item.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
-                    @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
-                </b-dropdown>
-                <b-dropdown v-else variant="primary" class="m-1"
-                :text="$t('views.select-template.viewers')">
-                  <b-dropdown-item v-for="dkpviewer in data.item.viewers" :key="dkpviewer"
+              <b-button v-if="data.item.viewers.length === 1" variant="primary"
+              @click="openDesktop({desktopId: data.item.id, viewer: data.item.viewers[0]})">
+                {{data.item.viewers[0]}}
+              </b-button>
+              <b-dropdown v-else-if="viewer" variant="primary" split
+              :text="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">
+                <b-dropdown-item v-for="dkpviewer in data.item.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
                   @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
-                </b-dropdown>
+              </b-dropdown>
+              <b-dropdown v-else variant="primary"
+              :text="$t('views.select-template.viewers')">
+                <b-dropdown-item v-for="dkpviewer in data.item.viewers" :key="dkpviewer"
+                @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
+              </b-dropdown>
             </div>
           </template>
           <template #cell(name)="data">
-            <col style="width: 10cm" class="d-flex align-items-center">
+            <b-row>
               <font-awesome-icon :icon="icons[data.item.icon]" size="2x" class="mr-2"/>
-              {{ data.item.name }}
-            <col>
+              <b-col class="pt-1">
+                <p>{{ data.item.name }}</p>
+              </b-col>
+            </b-row>
           </template>
         </b-table>
-          <b-table v-else :items="desktops" :fields="table_fields"
-          id="desktops-table" class="text-left" key="desktops_table">
+        <b-table v-else :items="desktops" :fields="table_fields"
+        id="desktops-table" class="text-left" key="desktops_table">
           <!-- Non persistent desktops -->
           <template #cell(action)="data">
             <b-button v-if="data.item.state" variant="danger" @click="deleteDesktop(data.item.id)">
@@ -158,16 +174,16 @@
           </template>
           <template #cell(viewers)="data">
             <div v-if="data.item.state && data.item.state.toLowerCase() == 'started'">
-              <b-button v-if="data.item.viewers.length === 1" variant="primary" class="m-1"
+              <b-button v-if="data.item.viewers.length === 1" variant="primary"
                 @click="openDesktop({desktopId: data.item.id, viewer: data.item.viewers[0]})">
                   {{data.item.viewers[0]}}
                 </b-button>
-                <b-dropdown v-else-if="viewer" variant="primary" split split-variant="outline-primary" class="m-1"
+                <b-dropdown v-else-if="viewer" variant="primary" split
                 :text="viewer" @click="openDesktop({desktopId: data.item.id, viewer: viewer})">
                   <b-dropdown-item v-for="dkpviewer in data.item.viewers.filter(dkpviewer => dkpviewer !== viewer)" :key="dkpviewer"
                     @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
                 </b-dropdown>
-                <b-dropdown v-else variant="primary" class="m-1"
+                <b-dropdown v-else variant="primary"
                 :text="$t('views.select-template.viewers')">
                   <b-dropdown-item v-for="dkpviewer in data.item.viewers" :key="dkpviewer"
                   @click="openDesktop({desktopId: data.item.id, viewer: dkpviewer})">{{dkpviewer}}</b-dropdown-item>
@@ -175,10 +191,12 @@
             </div>
           </template>
           <template #cell(name)="data">
-            <col style="width: 10cm" class="d-flex align-items-center">
+            <b-row>
               <font-awesome-icon :icon="icons[data.item.icon]" size="2x" class="mr-2"/>
-              {{ data.item.name }}
-            <col>
+              <b-col class="pt-1">
+                <p>{{data.item.state ? templates.filter(template => template.id ===  data.item.template)[0].name : data.item.name}}</p>
+              </b-col>
+            </b-row>
           </template>
           <template #cell(status)="data">
             <span v-if="data.item.state">{{status[data.item.state.toLowerCase()].text}}</span>
@@ -236,6 +254,10 @@ export default {
   computed: {
     viewer () {
       return this.$store.getters.getViewer
+    },
+    viewerText () {
+      const name = this.$store.getters.getViewer
+      return i18n.t('views.select-template.viewer', i18n.locale, { name: name })
     }
   },
   data () {
@@ -243,11 +265,13 @@ export default {
       table_fields: [
         {
           key: 'action',
-          label: i18n.t('components.desktop-cards.table-header.action')
+          label: i18n.t('components.desktop-cards.table-header.action'),
+          thStyle: { width: '4cm' }
         },
         {
           key: 'viewers',
-          label: i18n.t('components.desktop-cards.table-header.viewers')
+          label: i18n.t('components.desktop-cards.table-header.viewers'),
+          thStyle: { width: '4cm' }
         },
         {
           key: 'state',
@@ -256,17 +280,21 @@ export default {
             return value ? this.status[value.toLowerCase()].text : ''
           },
           sortByFormatted: true,
-          label: i18n.t('components.desktop-cards.table-header.state')
+          label: i18n.t('components.desktop-cards.table-header.state'),
+          thStyle: { width: '3cm' },
+          tdClass: 'pt-3'
         },
         {
           key: 'name',
           sortable: true,
-          label: i18n.t('components.desktop-cards.table-header.name')
+          label: i18n.t('components.desktop-cards.table-header.name'),
+          thStyle: { width: '12cm' }
         },
         {
           key: 'description',
           sortable: true,
-          label: i18n.t('components.desktop-cards.table-header.description')
+          label: i18n.t('components.desktop-cards.table-header.description'),
+          tdClass: 'pt-3'
         }
       ]
     }
@@ -297,9 +325,11 @@ export default {
   .bounce-enter-active {
     animation: bounce-in .5s;
   }
+
   .bounce-leave-active {
     animation: bounce-in .5s reverse;
   }
+
   @keyframes bounce-in {
     0% {
       transform: scale(0);

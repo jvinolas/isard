@@ -1,6 +1,6 @@
 <template>
   <b-container fluid>
-    <b-row align-h="center" class="mt-4">
+    <b-row align-h="center" class="pt-4">
       <b-col class="ml-2 mr-2">
         <b-button-group class="float-left">
             <b-button variant="danger" size="lg" @click="logout()">

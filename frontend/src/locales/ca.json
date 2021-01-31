@@ -88,6 +88,7 @@
             "persistent": "Escriptoris persistent",
             "volatile": "Escriptoris temporals",
             "viewers": "Visors",
+            "viewer": "Visor {name}",
             "remove": "Esborrar",
             "notification": {
                 "loading": {

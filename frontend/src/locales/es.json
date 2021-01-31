@@ -87,6 +87,7 @@
             "persistent": "Escritorios persistentes",
             "volatile": "Escritorios temporales",
             "viewers": "Visores",
+            "viewer": "Visor {name}",
             "remove": "Eliminar",
             "notification": {
                 "loading": {
