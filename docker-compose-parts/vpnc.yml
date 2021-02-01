@@ -9,7 +9,6 @@ services:
     networks:
       isard-network: {}
       isard-vpn:
-        ipv4_address: ${WG_HYPER_NET_WG_PEER}
     ports:
       - published: 443
         target: 443

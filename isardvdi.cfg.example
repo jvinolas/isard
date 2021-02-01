@@ -65,62 +65,24 @@ LOG_LEVEL=INFO
 # vpn container will get the first one by default.
 # Set a network that will allow as many clients as users you will
 # have.
+WG_INTERFACE=eth1
 WG_USERS_NET=10.0.0.0/16
 WG_USERS_PORT=443
 WG_HYPERS_NET=10.1.0.0/24
 WG_HYPERS_PORT=4443
 
-## Net between vpn container and isard-hypervisor container only
-## Only two hosts needed per host. One is for wireguard and the
-## next one for the hyper.
-## Take care of setting peers inside the defined subnet and not
-## overlap them in your infrastructure!
-WG_HYPER_NET=192.168.119.0/29
-## WG peer IP.
-## Can be any usable ip whithin WG_HYPER_NET but not the first one
-## as the first usable one will be the gateway for docker (not used
-## but docker without swarm mode doesn't allow net without gw).
-WG_HYPER_NET_WG_PEER=192.168.119.2
-# Hypervisor peer IP
-WG_HYPER_NET_HYPER_PEER=192.168.119.3
+## 0: isard-hypervisor.
+## N: next hypers. Be aware not to overlap them!
+HYPERVISOR_NUMBER=0
+WG_GUESTS_NETS=10.2.0.0/16
 
-## Hyper 2
-#WG_HYPER_NET=192.168.119.8/29
-#WG_HYPER_NET_WG_PEER=192.168.119.10
-#WG_HYPER_NET_HYPER_PEER=192.168.119.11
-
-## Hyper 3
-#WG_HYPER_NET=192.168.119.16/29
-#WG_HYPER_NET_WG_PEER=192.168.119.18
-#WG_HYPER_NET_HYPER_PEER=192.168.119.19
-
-
-# Hyper guests network.
-## When using multiple hypervisors take care to define non
-## overlapping ranges here for each hypervisor.
-## May leave an initial range free for server desktops that
-## will have fixed ip/mac
-
-## This net must include all the possible libvirt guests DHCP
-## subnetworks. It will be set as the wireguard clients (users)
-## route to the guests at their home device.
-WG_HYPER_GUEST_SUPERNET=192.168.128.0/20
-## And this is the DHCP server configuration parameters for guests
-## in this hypervisor
-## isard-hypervisor
-WG_HYPER_GUESTNET=192.168.128.0/23
-WG_HYPER_GUESTNET_DHCP_START=192.168.128.33
-WG_HYPER_GUESTNET_DHCP_END=192.168.129.254
-
-## hyper2
-#WG_HYPER_GUESTNET=192.168.130.0/23
-#WG_HYPER_GUESTNET_DHCP_START=192.168.130.33
-#WG_HYPER_GUESTNET_DHCP_END=192.168.131.254
-
-## hyper3
-#WG_HYPER_GUESTNET=192.168.132.0/23
-#WG_HYPER_GUESTNET_DHCP_START=192.168.132.33
-#WG_HYPER_GUESTNET_DHCP_END=192.168.132.254
+## 23: 512 GUESTS -2
+## 24: 256 GUESTS -2
+## Each hypervisor will get one th
+## Last network will be subdivided /29 to connect to hypers
+WG_GUESTS_DHCP_MASK=23
+#@
+WG_GUESTS_RESERVED_HOSTS=20
 
 
 # HYPERVISOR
