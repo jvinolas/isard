@@ -20,11 +20,8 @@ from ...lib import trees
 template_tree = trees.TemplateTree()
 
 
-from .decorators import isAdmin, isAdminManager
+from .decorators import isAdmin, isAdminManager, isAdvanced
 
-'''
-DOMAINS (NOT USED)
-'''
 @app.route('/isard-admin/admin/domains/render/<nav>')
 @login_required
 @isAdminManager

@@ -17,7 +17,7 @@ from .lib import *
 ''' 
 Update to new database release version when new code version release
 '''
-release_version = 11
+release_version = 12
 ### Upgrade is 10!!!
 tables=['config','hypervisors','hypervisors_pools','domains','media','graphics','users','roles','groups','interfaces']
 
@@ -521,6 +521,8 @@ class Upgrade(object):
                     log.error('Could not update table ' + table + ' add fields for db version ' + version + '!')
                     log.error('Error detail: ' + str(e))
 
+        if version == 12:
+            self.index_create(table,['tag'])
         return True
 
     '''

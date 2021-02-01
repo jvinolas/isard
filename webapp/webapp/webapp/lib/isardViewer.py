@@ -36,12 +36,14 @@ class isardViewer():
 
     def viewer_data(self,id,get_viewer='spice-client',current_user=False,default_viewer=False,get_cookie=True):
         try:
-            domain =  r.table('domains').get(id).pluck('id','name','status','viewer','options','user').run(db.conn)
+            domain =  r.table('domains').get(id).pluck('id','name','status','viewer','options','user','tag').run(db.conn)
         except DomainNotfound:
             raise
         if not domain['status'] == 'Started':
             raise DomainNotStarted
-             
+
+        if not (current_user.role == 'advanced' and 'tag' in domain.keys() and domain['tag'] in current_user.tags):
+            return False
         if current_user != False:
             if domain['user'] != current_user.id: return False 
         if  'preferred' not in domain['options']['viewers'].keys() or not domain['options']['viewers']['preferred'] == default_viewer:
