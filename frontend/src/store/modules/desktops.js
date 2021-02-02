@@ -69,6 +69,13 @@ export default {
               this._vm.$snotify.clear()
               reject(e)
               router.push({ name: 'ExpiredSession' })
+            } else if (e.response.status === 507) {
+              reject(
+                toast(
+                  i18n.t('views.select-template.error.create-quota.title'),
+                  i18n.t('views.select-template.error.create-quota.description')
+                )
+              )
             } else {
               reject(
                 toast(
@@ -99,6 +106,13 @@ export default {
                 toast(
                   i18n.t(`views.select-template.error.${data.action}-timeout.title`),
                   i18n.t(`views.select-template.error.${data.action}-timeout.description`)
+                )
+              )
+            } else if (e.response.status === 507) {
+              reject(
+                toast(
+                  i18n.t(`views.select-template.error.${data.action}-quota.title`),
+                  i18n.t(`views.select-template.error.${data.action}-quota.description`)
                 )
               )
             } else if (e.response.status === 401 || e.response.status === 403) {

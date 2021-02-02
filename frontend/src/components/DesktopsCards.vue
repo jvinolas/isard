@@ -6,7 +6,7 @@
         <!-- Persistent desktops -->
         <b-row v-if="persistent" key="persistent" align-h="center">
           <b-card v-for="desktop in desktops" :key="desktop.id" class="shadow persistent_desktop m-3 border-secondary" no-body>
-            <b-card-body>
+            <b-card-body :class="desktop.template && templates.filter(template => template.id ===  desktop.template).length > 0 ? '' : 'mt-4'">
               <font-awesome-icon size="4x" :icon="icons[desktop.icon]" class="mb-2"/>
               <b-card-title>
                 <h6>
@@ -51,7 +51,7 @@
                 {{status[desktop.state.toLowerCase()].actionText}}
               </b-button>
             </b-card-body>
-            <b-card-footer>
+            <b-card-footer v-if="desktop.template && templates.filter(template => template.id ===  desktop.template).length > 0">
               <small>
                 <b>{{$t('views.select-template.template')}}:</b>
                 {{templates.filter(template => template.id ===  desktop.template)[0].name}}

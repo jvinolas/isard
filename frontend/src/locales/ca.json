@@ -105,9 +105,17 @@
                     "title": "Error",
                     "description": "No s'ha pogut crear l'escriptori virtual degut a un error"
                 },
+                "create-quota": {
+                    "title": "Error",
+                    "description": "Disposes de massa escriptoris"
+                },
                 "start-error": {
                     "title": "Error",
                     "description": "No s'ha pogut inciar l'escriptori virtual degut a un error"
+                },
+                "start-quota": {
+                    "title": "Error",
+                    "description": "Estàs fent servir massa escriptoris al mateix temps"
                 },
                 "start-timeout": {
                     "title": "Timeout",

@@ -105,9 +105,17 @@
                     "title": "Error",
                     "description": "We couldn't create the virtual desktop due to an error"
                 },
+                "create-quota": {
+                    "title": "Error",
+                    "description": "You have too many desktops"
+                },
                 "start-error": {
                     "title": "Error",
                     "description": "We couldn't start the virtual desktop due to an error"
+                },
+                "start-quota": {
+                    "title": "Error",
+                    "description": "You are using too many desktops at the same time"
                 },
                 "start-timeout": {
                     "title": "Timeout",

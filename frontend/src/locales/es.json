@@ -104,9 +104,17 @@
                     "title": "Error",
                     "description": "No se ha podido crear el escritorio virtual debido a un error"
                 },
+                "create-quota": {
+                    "title": "Error",
+                    "description": "Dispones de demasiados escritorios"
+                },
                 "start-error": {
                     "title": "Error",
                     "description": "No se ha podido iniciar el escritorio virtual debido a un error"
+                },
+                "start-quota": {
+                    "title": "Error",
+                    "description": "Estás ejecutando demasiados escritorios al mismo tiempo"
                 },
                 "start-timeout": {
                     "title": "Timeout",

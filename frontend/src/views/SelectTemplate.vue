@@ -144,6 +144,7 @@ export default {
     pollData () {
       this.polling = setInterval(() => {
         this.$store.dispatch('fetchDesktops')
+        this.$store.dispatch('fetchTemplates')
       }, 15000)
     }
   }
