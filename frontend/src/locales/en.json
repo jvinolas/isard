@@ -89,6 +89,10 @@
             "volatile": "Temporal desktops",
             "viewers": "Viewers",
             "viewer": "{name} viewer",
+            "viewer-name": {
+                "spice": "SPICE",
+                "browser": "Browser"
+            },
             "remove": "Remove",
             "notification": {
                 "loading": {

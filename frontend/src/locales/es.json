@@ -88,6 +88,10 @@
             "volatile": "Escritorios temporales",
             "viewers": "Visores",
             "viewer": "Visor {name}",
+            "viewer-name": {
+                "spice": "SPICE",
+                "browser": "en el navegador"
+            },
             "remove": "Eliminar",
             "notification": {
                 "loading": {
