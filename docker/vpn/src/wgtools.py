@@ -175,8 +175,10 @@ class Wg(object):
 
     def up_peer(self,peer):
         if peer['vpn']['wireguard']['extra_client_nets'] != None:
-            peer['vpn']['wireguard']['Address']=peer['vpn']['wireguard']['Address']+','+peer['vpn']['wireguard']['extra_client_nets']
-        check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', peer['vpn']['wireguard']['Address']), text=True).strip()  
+            address=peer['vpn']['wireguard']['Address']+','+peer['vpn']['wireguard']['extra_client_nets']
+        else:
+            address=peer['vpn']['wireguard']['Address']
+        check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', address), text=True).strip()  
 
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
