@@ -25,4 +25,6 @@ print('Setting wireguard interface IP: ip a a '+str(list(int_net.hosts())[1])+'/
 os.system('ip a a '+str(list(int_net.hosts())[1])+'/'+str(int_net.prefixlen)+' dev '+os.environ['WG_INTERFACE'])
 
 #print('Setting route to wireguard users network: ip r a '+str(dhcp_subnet)+' via '+str(list(int_net.hosts())[1]))
-#os.system('ip r a '+str(dhcp_subnet)+' via '+str(list(int_net.hosts())[2]))
+
+print('Setting route to hypervisor guests: ip r a '+str(dhcp_subnet)+' via '+str(list(int_net.hosts())[2]))
+os.system('ip r a '+str(dhcp_subnet)+' via '+str(list(int_net.hosts())[2]))

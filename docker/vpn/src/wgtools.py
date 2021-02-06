@@ -84,6 +84,8 @@ class Wg(object):
         self.table=table
         self.server_port=server_port
         self.allowed_client_nets=allowed_client_nets
+        self.clients_net=clients_net
+
         # Get actual server keys or generate new ones
         self.keys=Keys(interface)
 
@@ -173,12 +175,22 @@ class Wg(object):
                             'keys':self.keys.new_client_keys(),
                             'AllowedIPs':self.allowed_client_nets}}} ### What networks the client will see.
 
+## remote hyper config
+ "Address": "10.1.0.2" ,
+"AllowedIPs": "10.2.0.0/16" , users_net 10.0.0.0/16
+"extra_client_nets": "10.2.2.0/23" , ok
+
     def up_peer(self,peer):
         if peer['vpn']['wireguard']['extra_client_nets'] != None:
             address=peer['vpn']['wireguard']['Address']+','+peer['vpn']['wireguard']['extra_client_nets']
         else:
             address=peer['vpn']['wireguard']['Address']
         check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', address), text=True).strip()  
+        if self.table == 'hypervisors':
+            # There seems to be a bug because the route is not applied so we need to force again...
+            check_output(('/usr/bin/wg-quick','save','hypers').strip()
+            check_output(('/usr/bin/wg-quick','down','hypers').strip()
+            check_output(('/usr/bin/wg-quick','up','hypers').strip()
 
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
