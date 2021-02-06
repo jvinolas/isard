@@ -19,23 +19,22 @@ while True:
         # App was restarted or db was lost. Just sync peers before get into changes.
         print('Checking initial config...')
         dbConnect()
-        os.environ['WG_GUESTS_NETS']
-        nparent = ipaddress.ip_network('10.2.0.0/16')
-        xarxes_dhcp= list(nparent.subnets(new_prefix=23))
-        xarxa_inter=xarxes_dhcp[-1]
-        sub = ipaddress.ip_network('10.2.254.0/23')
-        xarxes_inter= list(sub.subnets(new_prefix=29))
+        #os.environ['WG_GUESTS_NETS']
+        #nparent = ipaddress.ip_network('10.2.0.0/16')
+        #xarxes_dhcp= list(nparent.subnets(new_prefix=23))
+        #xarxa_inter=xarxes_dhcp[-1]
+        #sub = ipaddress.ip_network('10.2.254.0/23')
+        #xarxes_inter= list(sub.subnets(new_prefix=29))
 
         wg_users=Wg(interface='users',clients_net=os.environ['WG_USERS_NET'],table='users',server_port=os.environ['WG_USERS_PORT'],allowed_client_nets=os.environ['WG_GUESTS_NETS'],reset_client_certs=False)
-        wg_hypers=Wg(interface='hypers',clients_net=os.environ['WG_HYPERS_NET'],table='hypervisors',server_port=os.environ['WG_HYPERS_PORT'],allowed_client_nets=os.environ['WG_GUESTS_NETS'],reset_client_certs=True)
+        wg_hypers=Wg(interface='hypers',clients_net=os.environ['WG_HYPERS_NET'],table='hypervisors',server_port=os.environ['WG_HYPERS_PORT'],allowed_client_nets=os.environ['WG_GUESTS_NETS'],reset_client_certs=False)
 
         print('Config regenerated from database...\nStarting to monitor users changes...')
         #for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
         for user in r.table('users').pluck('id','vpn').merge({'table':'users'}).changes(include_initial=False).union(
-            r.table('hypervisors').pluck('id','vpn').merge({'table':'hypers'}).changes(include_initial=False)).run():
+            r.table('hypervisors').pluck('id','vpn','hypervisor_number').merge({'table':'hypers'}).changes(include_initial=False)).run():
             if user['new_val'] == None:
                 ### User was deleted
-                
                 if data['old_val']['table'] == 'users':
                     wg_users.remove_peer(data['old_val'])
                 else:

@@ -118,9 +118,10 @@ class Wg(object):
     def init_peers(self,reset):
         # This will reset all vpn config on restart.
         if reset == True:
+            print('Reset '+self.table+' peer certificates...')
             r.table(self.table).replace(r.row.without('vpn')).run()
         #####r.table('hypervisors').replace(r.row.without('vpn')).run()
-
+        print('Initializing peers...')
         wglist = list(r.table(self.table).pluck('id','vpn').run())
         if self.table == 'hypervisors': wglist = [d for d in wglist if d['id'] != 'isard-hypervisor']
         self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
@@ -144,15 +145,37 @@ class Wg(object):
         pprint(create_peers)
         r.table(self.table).insert(create_peers, conflict='update').run()
 
+    def get_hyper_subnet(self,hypervisor_number):
+        network=os.environ['WG_GUESTS_NETS']
+        dhcp_mask=int(os.environ['WG_GUESTS_DHCP_MASK'])
+        reserved_hosts=int(os.environ['WG_GUESTS_RESERVED_HOSTS'])
+        users_net=os.environ['WG_USERS_NET']
+
+        nparent = ipaddress.ip_network(network, strict=False)
+        dhcpsubnets=list(nparent.subnets(new_prefix=dhcp_mask))
+
+        return dhcpsubnets[hypervisor_number]
+
     def gen_new_peer(self,peer):
+        import pprint
+        pprint.pprint(peer)
+        if self.table == 'hypervisors':
+            if 'hypervisor_number' not in peer.keys():
+                peer['hypervisor_number'] = 1
+            extra_client_nets=str(self.get_hyper_subnet(peer['hypervisor_number']))
+        else:
+            extra_client_nets=None
         return {'id':peer['id'],
                 'vpn':{ 'iptables':[],
                         'wireguard':
                             {'Address':self.gen_client_ip(),
+                            'extra_client_nets': extra_client_nets,  ### What networks this vpn server will see on this client.
                             'keys':self.keys.new_client_keys(),
-                            'AllowedIPs':self.allowed_client_nets}}} 
+                            'AllowedIPs':self.allowed_client_nets}}} ### What networks the client will see.
 
     def up_peer(self,peer):
+        if peer['vpn']['wireguard']['extra_client_nets'] != None:
+            peer['vpn']['wireguard']['Address']=peer['vpn']['wireguard']['Address']+','+peer['vpn']['wireguard']['extra_client_nets']
         check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', peer['vpn']['wireguard']['Address']), text=True).strip()  
 
     def add_peer(self,peer):
