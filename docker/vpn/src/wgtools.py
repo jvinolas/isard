@@ -79,7 +79,7 @@ class Keys(object):
         
 class Wg(object):
 
-    def __init__(self,interface='wg0',clients_net='10.0.0.0/24',table='users',server_port='443',allowed_client_nets='0.0.0.0/0'):
+    def __init__(self,interface='wg0',clients_net='10.0.0.0/24',table='users',server_port='443',allowed_client_nets='0.0.0.0/0',reset_client_certs=False):
         self.interface=interface
         self.table=table
         self.server_port=server_port
@@ -96,7 +96,7 @@ class Wg(object):
         self.clients_reserved_ips=[self.server_ip]
         # Get existing users wireguard config and generate new one's if not exist.
         self.init_server()
-        self.init_peers()
+        self.init_peers(reset_client_certs)
         #for user_id,peer in self.peers.items():
         #    print(self.client_config(peer))
 
@@ -115,9 +115,10 @@ class Wg(object):
         check_output(('/usr/bin/wg-quick', 'up', self.interface), text=True).strip()
         ## End server config
 
-    def init_peers(self):
+    def init_peers(self,reset):
         # This will reset all vpn config on restart.
-        r.table(self.table).replace(r.row.without('vpn')).run()
+        if reset == True:
+            r.table(self.table).replace(r.row.without('vpn')).run()
         #####r.table('hypervisors').replace(r.row.without('vpn')).run()
 
         wglist = list(r.table(self.table).pluck('id','vpn').run())
@@ -167,8 +168,8 @@ class Wg(object):
         next_ip = str(next(host for host in self.server_net.hosts() if str(host) not in self.clients_reserved_ips))
         self.clients_reserved_ips.append(next_ip)
 
-        if self.table == 'hypervisors':
-            next_ip=next_ip+','+os.environ['WG_HYPER_GUESTNET'] 
+        #if self.table == 'hypervisors':
+        #    next_ip=next_ip+','+os.environ['WG_HYPER_GUESTNET'] 
         return next_ip
  
     def gen_peer_config(self,peer):

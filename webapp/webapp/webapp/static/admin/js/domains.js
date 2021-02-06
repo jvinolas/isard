@@ -374,7 +374,10 @@ $(document).ready(function() {
         if(data.status =='Started' && 'viewer' in data && 'guest_ip' in data['viewer']){
             if(!('viewer' in domains_table.row('#'+data.id).data()) || !('guest_ip' in domains_table.row('#'+data.id).data())){
                 //console.log('NEW IP ARRIVED!: '+data['viewer']['guest_ip'])
-                $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+                if($('#viewer-buttons button[data-type="vpn"]').length){
+                    $('#viewer-buttons button[data-type="vpn"]').prop("disabled",false).html($('#viewer-buttons button[data-type="vpn"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',data['viewer']['guest_ip']))
+                    $('#viewer-buttons button[data-type="rdp"]').prop("disabled",false).html($('#viewer-buttons button[data-type="rdp"]').html().replace('<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>',''))
+                }
             }
         }        
         dtUpdateInsert(domains_table,data,false);

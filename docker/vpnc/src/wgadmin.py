@@ -43,7 +43,7 @@ connection=False
 while not connection:
     try:
         dbConnect()
-        peer = r.table('hypervisors').get('isard-hypervisor').run()
+        peer = r.table('hypervisors').get(os.environ['HOSTNAME']).run()
         if peer != None:
             init_client(peer)
             connection=True
