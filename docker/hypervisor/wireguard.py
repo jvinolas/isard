@@ -36,7 +36,7 @@ wireguard_xml = """<network xmlns:dnsmasq='http://libvirt.org/schemas/network/dn
         <dnsmasq:option value="dhcp-option=121,%s,%s"/> \
         <dnsmasq:option value="dhcp-script=/update-client-ips.sh"/> \
       </dnsmasq:options> \
-</network>""" % (dhcp_subnet_gw, dhcp_subnet_prefix, dhcp_subnet_range_start, dhcp_subnet_range_end, users_net, wg_gw)
+</network>""" % (dhcp_subnet_gw, dhcp_subnet_prefix, dhcp_subnet_range_start, dhcp_subnet_range_end, users_net, dhcp_subnet_gw)
 
 with open('/etc/libvirt/qemu/networks/wireguard.xml', 'w') as fd:
     fd.write(wireguard_xml)
