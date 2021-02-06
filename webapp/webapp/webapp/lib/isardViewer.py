@@ -46,15 +46,9 @@ class isardViewer():
         if  'preferred' not in domain['options']['viewers'].keys() or not domain['options']['viewers']['preferred'] == default_viewer:
             r.table('domains').get(id).update({'options':{'viewers':{'preferred':default_viewer}}}).run(db.conn)
 
-        if get_viewer == 'vpn-client':
-            wgdata = r.table('users').get(current_user.id).pluck('vpn').run(db.conn) 
-            if wgdata == None or 'vpn' not in wgdata.keys():
-                return False
-            if app.wireguard_users_keys == False:
-                log.error('There is no wireguard keys in webapp config yet. You may need to restart webapp.')
-                return False
+        if get_viewer == 'rdp-client':
             if get_cookie:
-                return {'kind':'file','ext':'conf','mime':'text/plain','content':self.get_wireguard_file(domain,wgdata)} 
+                return {'kind':'file','ext':'rdp','mime':'application/x-rdp','content':self.get_rdp_file(domain['viewer']['guest_ip'])} 
             else:
                 return self.get_wireguard_file(domain,wgdata)
 
@@ -109,17 +103,9 @@ class isardViewer():
         
         return False
         
-    def get_wireguard_file(self,domain,peer):
-        return """[Interface]
-Address = %s
-PrivateKey = %s
-
-[Peer]
-PublicKey = %s
-Endpoint = %s:443
-AllowedIPs = %s
-PersistentKeepalive = 21
-""" % (peer['vpn']['wireguard']['Address'],peer['vpn']['wireguard']['keys']['private'],app.wireguard_users_keys['public'],domain['viewer']['proxy_video'],peer['vpn']['wireguard']['AllowedIPs'])
+    def get_rdp_file(self,ip):
+        return """full address:s:%s
+""" % (ip)
 
     def get_spice_file(self, domain, port):
         try:

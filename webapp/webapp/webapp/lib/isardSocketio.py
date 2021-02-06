@@ -26,6 +26,8 @@ from webapp import app
 from .isardViewer import isardViewer
 isardviewer = isardViewer()
 
+from .isardVpn import isardVpn
+isardvpn = isardVpn()
 
 from ..lib.quotas import QuotaLimits
 quotas = QuotaLimits()
@@ -1246,6 +1248,43 @@ def socketio_admin_domains_viewer(data):
                         msg,
                         namespace='/isard-admin/sio_users', 
                         room='user_'+current_user.id)   
+
+#### VPN
+@socketio.on('vpn', namespace='/isard-admin/sio_users')
+def socketio_vpn(data):
+    remote_addr=request.headers['X-Forwarded-For'].split(',')[0] if 'X-Forwarded-For' in request.headers else request.remote_addr.split(',')[0]
+    vpn_data=isardvpn.vpn_data(data['vpn'],data['kind'],data['os'],current_user=current_user)
+    if vpn_data:
+        socketio.emit('vpn',
+                        json.dumps(vpn_data),
+                        namespace='/isard-admin/sio_users', 
+                        room='user_'+current_user.id)          
+        
+    else:
+        msg=json.dumps({'result':True,'title':'VPN','text':'VPN could not be opened. Try again.','icon':'warning','type':'error'})
+        socketio.emit('result',
+                        msg,
+                        namespace='/isard-admin/sio_users', 
+                        room='user_'+current_user.id)     
+
+## Now both functions are the same.
+## Do we really want other admin users to get vpn config for clients??
+@socketio.on('vpn', namespace='/isard-admin/sio_admins')
+def socketio_admin_vpn(data):
+    remote_addr=request.headers['X-Forwarded-For'].split(',')[0] if 'X-Forwarded-For' in request.headers else request.remote_addr.split(',')[0]
+    vpn_data=isardvpn.vpn_data(data['vpn'],data['kind'],data['os'],current_user=current_user)
+    if vpn_data:
+        socketio.emit('vpn',
+                        json.dumps(vpn_data),
+                        namespace='/isard-admin/sio_admins', 
+                        room='user_'+current_user.id)          
+        
+    else:
+        msg=json.dumps({'result':True,'title':'VPN','text':'VPN could not be opened. Try again.','icon':'warning','type':'error'})
+        socketio.emit('result',
+                        msg,
+                        namespace='/isard-admin/sio_admins', 
+                        room='user_'+current_user.id)    
 
 @socketio.on('disposable_viewer', namespace='/isard-admin/sio_disposables')
 def socketio_disposables_viewer(data):

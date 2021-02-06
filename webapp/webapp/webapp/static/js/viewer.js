@@ -5,6 +5,34 @@
 * License: AGPLv3
 */
 
+function startClientVpnSocket(socket){
+    $('#btn-uservpninstall').on('click', function () {
+        socket.emit('vpn',{'vpn':'users','kind':'install','os':getOS()});   
+    });
+    $('#btn-uservpnconfig').on('click', function () {
+        socket.emit('vpn',{'vpn':'users','kind':'config','os':getOS()});   
+    });
+    $('#btn-uservpnclient').on('click', function () {
+        socket.emit('vpn',{'vpn':'users','kind':'client','os':getOS()});   
+    });
+
+    socket.on('vpn', function (data) {
+        var data = JSON.parse(data);
+        if(data['kind']=='url'){
+            window.open(data['url'], '_blank');            
+        }
+        if(data['kind']=='file'){
+            var vpnFile = new Blob([data['content']], {type: data['mime']});
+            var a = document.createElement('a');
+                a.download = data['name']+'.'+data['ext'];
+                a.href = window.URL.createObjectURL(vpnFile);
+            var ev = document.createEvent("MouseEvents");
+                ev.initMouseEvent("click", true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dispatchEvent(ev);              
+        }
+    });
+}
+
 function setViewerButtons(id,socket,offer){
     offer=[
              {
@@ -20,7 +48,7 @@ function setViewerButtons(id,socket,offer){
              'preferred': false
              },
              {
-                'type': 'vpn', 
+                'type': 'rdp', 
                 'client': 'app',
                 'secure': true,
                 'preferred': false
@@ -43,11 +71,20 @@ function setViewerButtons(id,socket,offer){
                 {type='<i class="fa fa-download"></i>';btntext=disp['type'].toUpperCase()+' Application';client='client';}
             else if(disp['client']=='websocket')
                 {type='<i class="fa fa-html5"></i>';btntext=disp['type'].toUpperCase()+' Browser';client='html5'}
-            html=br+prehtml+html+'<button data-pk="'+id+'" data-type="'+disp['type']+'" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn '+success+' '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;
+            if(disp['type'] == 'rdp'){ 
+                html=br+prehtml+html+'<button data-pk="'+id+'" data-type="'+disp['type']+'" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn '+success+' '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;   
+                typevpn='<i class="fa network-wired"></i>';btntextvpn='Desktop IP: ';client='client';
+                html=br+prehtml+html+'<button data-pk="'+id+'" data-type="vpn" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn btn-light '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+typevpn+' '+btntextvpn+'</button>'+posthtml+br;
+                //html=br+prehtml+html+'<button btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;
+            }else{
+                //type='<i class="fa fa-download"></i>';btntext=disp['type'].toUpperCase()+' Application';client='client'; 
+                html=br+prehtml+html+'<button data-pk="'+id+'" data-type="'+disp['type']+'" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn '+success+' '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;
+            }
     })
     $('#viewer-buttons').html(html);
     loading='<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>'
     //$('#viewer-buttons button[data-type="vpn"]').html(loading)
+    $('#viewer-buttons button[data-type="rdp"]').prop("disabled",true).html($('#viewer-buttons button[data-type="rdp"]').html()+loading);
     $('#viewer-buttons button[data-type="vpn"]').prop("disabled",true).html($('#viewer-buttons button[data-type="vpn"]').html()+loading);
     $('#viewer-buttons .btn-viewers').on('click', function () {
         if($('#chk-viewers').iCheck('update')[0].checked){
@@ -55,10 +92,13 @@ function setViewerButtons(id,socket,offer){
         }else{
             preferred=false
         }
+        console.log($(this).data('type')+'-'+$(this).data('client'))
         socket.emit('domain_viewer',{'pk':id,'kind':$(this).data('type')+'-'+$(this).data('client'),'os':$(this).data('os'),'preferred':preferred});
         $("#modalOpenViewer").modal('hide');        
     });
 }
+
+
 
 function setCookie(name,value,days) {
     var expires = "";

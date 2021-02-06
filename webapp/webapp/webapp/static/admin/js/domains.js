@@ -362,7 +362,7 @@ $(document).ready(function() {
     });
     
     startClientViewerSocket(socket);
-    
+    startClientVpnSocket(socket)
     socket.on('user_quota', function(data) {
         console.log('Quota update')
         var data = JSON.parse(data);
