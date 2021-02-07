@@ -81,7 +81,6 @@ WG_GUESTS_NETS=10.2.0.0/16
 ## Each hypervisor will get one th
 ## Last network will be subdivided /29 to connect to hypers
 WG_GUESTS_DHCP_MASK=23
-#@
 WG_GUESTS_RESERVED_HOSTS=20
 
 
