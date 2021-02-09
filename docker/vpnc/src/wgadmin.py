@@ -9,8 +9,15 @@ import logging as log
 
 from subprocess import check_call, check_output
 
+conn = False
+
 def dbConnect():
-    r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
+    global conn
+    try:
+        conn.close()
+    except:
+        None
+    conn = r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
 
 def get_wireguard_file(peer):
     endpoint=os.environ['STATS_RETHINKDB_HOST']
@@ -39,22 +46,34 @@ def init_client(peer):
         f.write(get_wireguard_file(peer))
     check_output(('/usr/bin/wg-quick', 'up', 'wg0'), text=True).strip()
 
-connection=False
-while not connection:
+
+def reacheable(hostname):
+    return True if os.system("ping -c 1 " + hostname) == 0 else False
+
+
+while True:
+    if connection == False:
+        try:
+            dbConnect()
+        except:
+            time.sleep(5)
+            continue
+
+    if reacheable("10.0.0.1"): 
+        connection = True
+        time.sleep(5)
+        continue
+
     try:
-        dbConnect()
         peer = r.table('hypervisors').get(os.environ['HOSTNAME']).run()
         if peer != None:
             init_client(peer)
-            connection=True
-    except (ReqlDriverError, ReqlOpFailedError):
-        print('Hypervisors: Rethink db connection lost!')
-        log.error('Hypervisors: Rethink db connection lost!')
-        time.sleep(5)
-    except Exception as e:
-        print('Hypervisors internal error: \n'+traceback.format_exc())
-        log.error('Hypervisors internal error: \n'+traceback.format_exc())
-        exit(1)
-        
+        if reacheable("10.0.0.1"): 
+            connection = True
+            time.sleep(5)
+            continue
+    except:
+        continue
+
 print('Hypervisors ENDED!!!!!!!')
 log.error('Hypervisors ENDED!!!!!!!')  

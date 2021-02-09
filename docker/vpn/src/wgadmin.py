@@ -72,9 +72,9 @@ while True:
                         if user['new_val']['id']=='isard-hypervisor': continue
                         wg_hypers.update_peer(data['new_val'])
 
-    except ReqlDriverError:
-        print('Users: Rethink db connection lost!')
-        log.error('Users: Rethink db connection lost!')
+    except (ReqlDriverError, ReqlOpFailedError):
+        print('Users: Rethink db connection missing!')
+        log.error('Users: Rethink db connection missing!')
         time.sleep(.5)
     except Exception as e:
         print('Users internal error: \n'+traceback.format_exc())
