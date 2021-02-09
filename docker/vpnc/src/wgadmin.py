@@ -2,6 +2,8 @@ import os, time
 from pprint import pprint
 import traceback
 
+from pythonping import ping
+
 from rethinkdb import RethinkDB; r = RethinkDB()
 from rethinkdb.errors import ReqlDriverError, ReqlTimeoutError, ReqlOpFailedError
 
@@ -52,12 +54,9 @@ def init_client(peer):
 
 
 def reacheable(hostname, waittime=1000):
-    if os.system("ping -c 1 -W " + str(waittime) + " " +
-                 hostname + " > /dev/null 2>&1") is 0:
-        return True
-    else:
-        return False
-
+    res = ping(hostname, count=1, timeout=1)
+    if res.success(): return True
+    return False
 
 while True:
     if conn == False:
@@ -77,19 +76,20 @@ while True:
         continue
     else:
         print('   GW failed!')
-
+        time.sleep(5)
     try:
         print('Try to get hostname data from DB...')
         peer = r.table('hypervisors').get(os.environ['HOSTNAME']).run()
         if peer != None:
             init_client(peer)
         if reacheable("10.0.0.1"):
-            print('   GW reached...') 
+            ## Gateway reached
             connection = True
-            time.sleep(5)
+            time.sleep(10)
             continue
         else:
             print('   GW failed! Try db connection again...')
+            time.sleep(5)
             conn = False
     except:
         print('   Failed to get data from DB')
