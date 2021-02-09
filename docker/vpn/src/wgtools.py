@@ -124,7 +124,7 @@ class Wg(object):
             r.table(self.table).replace(r.row.without('vpn')).run()
         #####r.table('hypervisors').replace(r.row.without('vpn')).run()
         print('Initializing peers...')
-        wglist = list(r.table(self.table).pluck('id','vpn').run())
+        wglist = list(r.table(self.table).pluck('id','vpn','hypervisor_number').run())
         if self.table == 'hypervisors': wglist = [d for d in wglist if d['id'] != 'isard-hypervisor']
         self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
 
@@ -182,6 +182,7 @@ class Wg(object):
             address=peer['vpn']['wireguard']['Address']
         check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'allowed-ips', address), text=True).strip()  
         if self.table == 'hypervisors':
+            pass
             # There seems to be a bug because the route is not applied so we need to force again...
             check_output(('/usr/bin/wg-quick','save','hypers'), text=True).strip()
             check_output(('/usr/bin/wg-quick','down','hypers'), text=True).strip()
