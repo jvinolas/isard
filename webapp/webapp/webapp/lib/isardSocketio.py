@@ -9,6 +9,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 import time
 import json
 import threading
+import requests
 import sys
 import traceback
 
@@ -533,6 +534,7 @@ def start_config_thread():
 def socketio_hyper_add(form_data):
     if current_user.role == 'admin': 
         create_dict=app.isardapi.f.unflatten_dict(form_data)
+        create_dict['hypervisor_number']=int(create_dict['hypervisor_number'])
         if 'capabilities' not in create_dict: create_dict['capabilities']={}
         if 'disk_operations' not in create_dict['capabilities']:
             create_dict['capabilities']['disk_operations']=False
@@ -557,17 +559,23 @@ def socketio_hyper_add(form_data):
                                     # ~ 'static':create_dict.pop('static')}            
             res=app.adminapi.hypervisor_add(create_dict)
 
-            if res is True:
+            if res == True:
                 info=json.dumps({'result':True,'title':'New hypervisor','text':'Hypervisor '+create_dict['hostname']+' has been created.','icon':'success','type':'success'})
                 ### Engine restart needed
-                
+                try:
+                    requests.get('http://isard-engine:5555/engine_restart')
+                except:
+                    None
                 ### Warning
-            else:
+            elif res == False:
                 info=json.dumps({'result':False,'title':'New hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be created. Maybe it already exists!','icon':'warning','type':'error'})
+            else:
+                info=json.dumps({'result':False,'title':'New hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be created. '+res,'icon':'warning','type':'error'})
+
             socketio.emit('add_form_result',
                             info,
                             namespace='/isard-admin/sio_admins', 
-                            room='hyper')
+                            room='hyper')                
         else:
             info=json.dumps({'result':False,'title':'Hypervisor add error','text':'Hypervisor should have at least one capability!','icon':'warning','type':'error'})        
             socketio.emit('result',
@@ -579,7 +587,17 @@ def socketio_hyper_add(form_data):
 def socketio_hyper_edit(form_data):
     if current_user.role == 'admin': 
         create_dict=app.isardapi.f.unflatten_dict(form_data)
-        
+        if 'hypervisor_number' not in create_dict.keys() or create_dict['id'] == 'isard-hypervisor':
+            create_dict['hypervisor_number']=0
+        elif create_dict['id'] != 'isard-hypervisor' and int(create_dict['hypervisor_number']) == 0:
+            info=json.dumps({'result':False,'title':'Edit hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be number 0, only isard-hypervisor','icon':'warning','type':'error'})
+            socketio.emit('add_form_result',
+                            info,
+                            namespace='/isard-admin/sio_admins', 
+                            room='hyper')
+            return
+        else:
+            create_dict['hypervisor_number']=int(create_dict['hypervisor_number'])
         if 'capabilities' not in create_dict: create_dict['capabilities']={}
         if 'disk_operations' not in create_dict['capabilities']:
             create_dict['capabilities']['disk_operations']=False
@@ -606,13 +624,18 @@ def socketio_hyper_edit(form_data):
             #~ create_dict['enabled']=True
             res=app.adminapi.hypervisor_edit(create_dict)
 
-            if res is True:
+            if res == True:
                 info=json.dumps({'result':True,'title':'Edit hypervisor','text':'Hypervisor '+create_dict['hostname']+' has been edited.','icon':'success','type':'success'})
                 ### Engine restart needed
-                
+                try:
+                    requests.get('http://isard-engine:5555/engine_restart')
+                except:
+                    None
                 ### Warning
+            elif res == False:
+                info=json.dumps({'result':False,'title':'Edit hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be edited. Maybe it already exists!','icon':'warning','type':'error'})
             else:
-                info=json.dumps({'result':False,'title':'Edit hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be edited now.','icon':'warning','type':'error'})
+                info=json.dumps({'result':False,'title':'Edit hypervisor','text':'Hypervisor '+create_dict['hostname']+' can\'t be edited. '+res,'icon':'warning','type':'error'})
             socketio.emit('add_form_result',
                             info,
                             namespace='/isard-admin/sio_admins', 
@@ -632,6 +655,10 @@ def socketio_hyper_delete(data):
         # ~ res=app.adminapi.update_table_dict('hypervisors',data['pk'],{'enabled':False,'status':'Deleting'}),
         if res is True:
             info=json.dumps({'result':True,'title':'Hypervisor deletiing','text':'Hypervisor '+data['name']+' deletion on progress. Engine will delete it when no operations pending.','icon':'success','type':'success'})
+            try:
+                requests.get('http://isard-engine:5555/engine_restart')
+            except:
+                None
         else:
             info=json.dumps({'result':False,'title':'Hypervisor deleting','text':'Hypervisor '+data['name']+' could not set it to start deleting process.','icon':'warning','type':'error'})          
         socketio.emit('result',
@@ -646,6 +673,10 @@ def socketio_hyper_toggle(data):
         res=app.adminapi.hypervisor_toggle_enabled(data['pk'])
         if res is True:
             info=json.dumps({'result':True,'title':'Hypervisor enable/disable','text':'Hypervisor '+data['name']+' enable/disable success.','icon':'success','type':'success'})
+            try:
+                requests.get('http://isard-engine:5555/engine_restart')
+            except:
+                None
         else:
             info=json.dumps({'result':False,'title':'Hypervisor enable/disable','text':'Hypervisor '+data['name']+' could not toggle enable status!','icon':'warning','type':'error'})        
         socketio.emit('result',

@@ -3,7 +3,7 @@ from pprint import pprint
 import traceback
 
 from rethinkdb import RethinkDB; r = RethinkDB()
-from rethinkdb.errors import ReqlDriverError, ReqlTimeoutError
+from rethinkdb.errors import ReqlDriverError, ReqlTimeoutError, ReqlOpFailedError
 
 import logging as log
 
@@ -47,7 +47,7 @@ while not connection:
         if peer != None:
             init_client(peer)
             connection=True
-    except ReqlDriverError:
+    except (ReqlDriverError, ReqlOpFailedError):
         print('Hypervisors: Rethink db connection lost!')
         log.error('Hypervisors: Rethink db connection lost!')
         time.sleep(5)
