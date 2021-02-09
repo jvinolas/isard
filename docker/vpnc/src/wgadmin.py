@@ -49,7 +49,7 @@ def init_client(peer):
 
 
 def reacheable(hostname):
-    return True if os.system("ping -c 1 " + hostname +' >/dev/null 2>&1') == 0 else False
+    return True if os.system("ping -c 1 " + hostname) == 0 else False
 
 
 while True:
