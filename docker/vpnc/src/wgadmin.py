@@ -17,6 +17,7 @@ def dbConnect():
         conn.close()
     except:
         conn = False
+        raise
     conn = r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
 
 def get_wireguard_file(peer):
@@ -48,32 +49,43 @@ def init_client(peer):
 
 
 def reacheable(hostname):
-    return True if os.system("ping -c 1 " + hostname) == 0 else False
+    return True if os.system("ping -c 1 " + hostname +' >/dev/null 2>&1') == 0 else False
 
 
 while True:
     if conn == False:
         try:
+            print('Try DB connection...')
             dbConnect()
+            print('   -> DB connection stablished.')
         except:
+            print('  DB connection failed. Retrying...')
             time.sleep(5)
             continue
 
-    if reacheable("10.0.0.1"): 
+    if reacheable("10.0.0.1") == True:
+        print('   GW reached...') 
         connection = True
         time.sleep(5)
         continue
+    else:
+        print('   GW failed!')
 
     try:
+        print('Try to get hostname data from DB...')
         peer = r.table('hypervisors').get(os.environ['HOSTNAME']).run()
         if peer != None:
             init_client(peer)
-        if reacheable("10.0.0.1"): 
+        if reacheable("10.0.0.1"):
+            print('   GW reached...') 
             connection = True
             time.sleep(5)
             continue
+        else:
+            print('   GW failed! Try db connection again...')
     except:
+        print('   Failed to get data from DB')
         continue
 
-print('Hypervisors ENDED!!!!!!!')
-log.error('Hypervisors ENDED!!!!!!!')  
+print('Thread ENDED!!!!!!!')
+log.error('Thread ENDED!!!!!!!')  
