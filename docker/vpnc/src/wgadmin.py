@@ -16,10 +16,13 @@ def dbConnect():
     try:
         conn.close()
     except:
+        None
+    try:
+        conn = r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
+    except:
         conn = False
         raise
-    conn = r.connect(host=os.environ['STATS_RETHINKDB_HOST'], port=os.environ['STATS_RETHINKDB_PORT'],db=os.environ['RETHINKDB_DB']).repl()
-
+        
 def get_wireguard_file(peer):
     endpoint=os.environ['STATS_RETHINKDB_HOST']
     try:
