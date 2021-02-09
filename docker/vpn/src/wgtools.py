@@ -191,7 +191,7 @@ class Wg(object):
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
         self.up_peer(new_peer)
-        r.table('users').insert(new_peer, conflict='update').run()
+        r.table(self.table).insert(new_peer, conflict='update').run()
 
     def remove_peer(self,peer):
         if 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
