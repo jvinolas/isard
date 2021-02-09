@@ -22,7 +22,7 @@ def dbConnect():
     except:
         conn = False
         raise
-        
+
 def get_wireguard_file(peer):
     endpoint=os.environ['STATS_RETHINKDB_HOST']
     try:
@@ -51,8 +51,12 @@ def init_client(peer):
     check_output(('/usr/bin/wg-quick', 'up', 'wg0'), text=True).strip()
 
 
-def reacheable(hostname):
-    return True if os.system("ping -c 1 " + hostname) == 0 else False
+def reacheable(hostname, waittime=1000):
+    if os.system("ping -c 1 -W " + str(waittime) + " " +
+                 hostname + " > /dev/null 2>&1") is 0:
+        return True
+    else:
+        return False
 
 
 while True:
@@ -86,8 +90,10 @@ while True:
             continue
         else:
             print('   GW failed! Try db connection again...')
+            conn = False
     except:
         print('   Failed to get data from DB')
+        conn = False
         continue
 
 print('Thread ENDED!!!!!!!')
