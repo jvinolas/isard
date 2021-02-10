@@ -47,10 +47,8 @@ class isardViewer():
             r.table('domains').get(id).update({'options':{'viewers':{'preferred':default_viewer}}}).run(db.conn)
 
         if get_viewer == 'rdp-client':
-            if get_cookie:
-                return {'kind':'file','ext':'rdp','mime':'application/x-rdp','content':self.get_rdp_file(domain['viewer']['guest_ip'])} 
-            else:
-                return self.get_wireguard_file(domain,wgdata)
+            return {'kind':'file','name':'isard-rdp','ext':'rdp','mime':'application/x-rdp','content':self.get_rdp_file(domain['viewer']['guest_ip'])} 
+
 
         if get_viewer == 'spice-html5':
             port=domain['viewer']['base_port']

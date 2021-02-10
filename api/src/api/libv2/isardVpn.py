@@ -5,20 +5,22 @@
 
 #!/usr/bin/env python
 # coding=utf-8
-import sys, json
-from webapp import app
-import rethinkdb as r
-from ..lib.log import * 
 
-from .flask_rethink import RethinkDB
-db = RethinkDB(app)
+import sys,base64,json
+from api import app
+from ..libv2.log import * 
+
+from rethinkdb import RethinkDB; r = RethinkDB()
+from rethinkdb.errors import ReqlTimeoutError
+import urllib
+
+from ..libv2.flask_rethink import RDB
+db = RDB(app)
 db.init_app(app)
 
 from .admin_api import flatten
 from netaddr import IPNetwork, IPAddress 
 import urllib
-
-
 
 class isardVpn():
     def __init__(self):

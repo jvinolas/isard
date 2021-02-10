@@ -28,6 +28,9 @@ quotas = Quotas()
 from ..libv2.api_users import ApiUsers
 users = ApiUsers()
 
+from ..libv2.isardVpn import isardVpn
+vpn = isardVpn()
+
 @app.route('/api/v2', methods=['GET'])
 def api_v2_test():
     return "IsardVDI api v2", 200, {'ContentType': 'application/json'}
@@ -345,3 +348,13 @@ def api_v2_categories():
     except Exception as e:
         error = traceback.format_exc()
         return json.dumps({"code":9,"msg":"CategoriesGet general exception: " + error }), 401, {'ContentType': 'application/json'}
+
+@app.route('/api/v2/user/<id>/vpn/<kind>/<os>', methods=['GET'])
+def api_v2_user_vpn(id, kind, os):
+    vpn_data=vpn.vpn_data('users',kind,os,id)
+
+    if vpn_data != False:
+        return json.dumps({'vpn': vpn_data}), 200, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({"code":9,"msg":"UserVpn general exception: " + error }), 401, {'ContentType': 'application/json'}
+

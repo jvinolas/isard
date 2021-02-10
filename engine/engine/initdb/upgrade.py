@@ -336,7 +336,7 @@ class Upgrade(object):
    
                 ''' NEW FIELDS PRE CHECKS '''   
                 try: 
-                    if d['id'] == 'isard-hypervisor':
+                    if id == 'isard-hypervisor':
                         if not self.check_done( d,
                                             ['hypervisor_number'],
                                             []):                                     
