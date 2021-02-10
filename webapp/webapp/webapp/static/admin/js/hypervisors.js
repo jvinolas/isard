@@ -162,6 +162,7 @@ $(document).ready(function() {
         if ( row.child.isShown() ) {
             // This row is already open - close it
             row.child.hide();
+            row.child.remove();
             tr.removeClass('shown');
         }
         else {
@@ -176,7 +177,6 @@ $(document).ready(function() {
             tableHypervisorDomains(row.data().id);
             setHypervisorDetailButtonsStatus(row.data().id,row.data().status)
             actionsHyperDetail();
-
         }
     } );
 
@@ -477,6 +477,7 @@ function actionsHyperDetail(){
                     $('#modalEditHyper #modalEdit #hypervisor_number').prop( "disabled", true );
                 }else{
                     $('#modalEditHyper #modalEdit #hypervisor_number').val(hyp.hypervisor_number);
+                    $('#modalEditHyper #modalEdit #hypervisor_number').prop( "disabled", false );
                 }
                 $('#modalEditHyper #modalEdit #hostname').val(hyp.hostname);
                 $('#modalEditHyper #modalEdit #user').val(hyp.user);
