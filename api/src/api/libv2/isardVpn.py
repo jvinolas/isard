@@ -18,9 +18,6 @@ from ..libv2.flask_rethink import RDB
 db = RDB(app)
 db.init_app(app)
 
-from .admin_api import flatten
-from netaddr import IPNetwork, IPAddress 
-import urllib
 
 class isardVpn():
     def __init__(self):
@@ -39,6 +36,7 @@ class isardVpn():
             return False
         ## First up time the wireguard config keys are missing till isard-vpn populates it.
         if app.wireguard_users_keys == False:
+            sysconfig = r.db('isard').table('config').get(1).run(db.conn)
             app.wireguard_users_keys = sysconfig.get('vpn_users', {}).get('wireguard', {}).get('keys', False)
         if app.wireguard_users_keys == False:
             log.error('There are no wireguard keys in webapp config yet. Try again in a few seconds...')

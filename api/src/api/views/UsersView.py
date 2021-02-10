@@ -350,7 +350,13 @@ def api_v2_categories():
         return json.dumps({"code":9,"msg":"CategoriesGet general exception: " + error }), 401, {'ContentType': 'application/json'}
 
 @app.route('/api/v2/user/<id>/vpn/<kind>/<os>', methods=['GET'])
-def api_v2_user_vpn(id, kind, os):
+@app.route('/api/v2/user/<id>/vpn/<kind>', methods=['GET'])
+# kind = config,install
+# os =
+def api_v2_user_vpn(id, kind, os=False):
+    if os == False and kind != 'config':
+        return json.dumps({"code":9,"msg":"UserVpn general exception: " + error }), 401, {'ContentType': 'application/json'}
+    
     vpn_data=vpn.vpn_data('users',kind,os,id)
 
     if vpn_data != False:

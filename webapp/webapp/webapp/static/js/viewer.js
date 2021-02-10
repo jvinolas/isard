@@ -74,7 +74,8 @@ function setViewerButtons(id,socket,offer){
             if(disp['type'] == 'rdp'){ 
                 html=br+prehtml+html+'<button data-pk="'+id+'" data-type="'+disp['type']+'" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn '+success+' '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;   
                 typevpn='<i class="fa network-wired"></i>';btntextvpn='Desktop IP: ';client='client';
-                html=br+prehtml+html+'<button data-pk="'+id+'" data-type="vpn" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn btn-light '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+typevpn+' '+btntextvpn+'</button>'+posthtml+br;
+                //html=br+prehtml+html+'<button data-pk="'+id+'" data-type="vpn" data-client="'+client+'" data-os="'+getOS()+'" type="button" class="btn btn-light '+preferred+' btn-viewers" style="width:'+w+'%">'+lock+' '+typevpn+' '+btntextvpn+'</button>'+posthtml+br;
+                html=br+prehtml+html+'<div data-pk="'+id+'" data-type="vpn" data-client="'+client+'" data-os="'+getOS()+' style="width:'+w+'% height:2000px">'+lock+' '+typevpn+' '+btntextvpn+'</button>'+posthtml+br;
                 //html=br+prehtml+html+'<button btn-viewers" style="width:'+w+'%">'+lock+' '+type+' '+btntext+'</button>'+posthtml+br;
             }else{
                 //type='<i class="fa fa-download"></i>';btntext=disp['type'].toUpperCase()+' Application';client='client'; 
@@ -85,7 +86,7 @@ function setViewerButtons(id,socket,offer){
     loading='<i class="fa fa-spinner fa-pulse fa-1x fa-fw"></i>'
     //$('#viewer-buttons button[data-type="vpn"]').html(loading)
     $('#viewer-buttons button[data-type="rdp"]').prop("disabled",true).html($('#viewer-buttons button[data-type="rdp"]').html()+loading);
-    $('#viewer-buttons button[data-type="vpn"]').prop("disabled",true).html($('#viewer-buttons button[data-type="vpn"]').html()+loading);
+    $('#viewer-buttons div[data-type="vpn"]').prop("disabled",true).html($('#viewer-buttons div[data-type="vpn"]').html()+loading);
     $('#viewer-buttons .btn-viewers').on('click', function () {
         if($('#chk-viewers').iCheck('update')[0].checked){
             preferred=true

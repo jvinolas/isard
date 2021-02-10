@@ -104,7 +104,7 @@ class isardViewer():
             port=domain['viewer']['base_port']+self.spice_tls
             consola=self.get_spice_file(domain,port)
             if get_cookie:
-                return {'kind':'file','ext':consola[0],'mime':consola[1],'content':consola[2]} 
+                return {'kind':'file','name':'isard-spice','ext':consola[0],'mime':consola[1],'content':consola[2]} 
             else:
                 return consola[2]
                 
