@@ -3,4 +3,3 @@ networks:
   isard-network:
     external: false
     name: isard-network
-  isard-vpn:

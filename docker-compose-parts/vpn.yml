@@ -23,3 +23,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env  
+
+networks:
+  isard-vpn:
+    external: false
+    name: isard-vpn
