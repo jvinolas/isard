@@ -129,7 +129,7 @@ function startClientViewerSocket(socket){
                 a.dispatchEvent(ev);              
         }
     });
-}   
+}
 
 
 function setViewerHelp(){

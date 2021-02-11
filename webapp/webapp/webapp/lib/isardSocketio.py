@@ -689,6 +689,22 @@ def socketio_hyper_toggle(data):
                         namespace='/isard-admin/sio_admins', 
                         room='hyper')
 
+@socketio.on('hyper_vpn', namespace='/isard-admin/sio_admins')
+def socketio_hyper_toggle(data):
+    if current_user.role == 'admin': 
+        vpn_data=isardvpn.vpn_data('hypers','config','',current_user=current_user,id=data['pk'])
+        if vpn_data:
+            socketio.emit('hyper_vpn',
+                            json.dumps(vpn_data),
+                            namespace='/isard-admin/sio_admins', 
+                            room='user_'+current_user.id)          
+        else:
+            msg=json.dumps({'result':True,'title':'VPN','text':'VPN could not be opened. Try again.','icon':'warning','type':'error'})
+            socketio.emit('result',
+                            msg,
+                            namespace='/isard-admin/sio_admins', 
+                            room='user_'+current_user.id) 
+
 @socketio.on('hyper_domains_stop', namespace='/isard-admin/sio_admins')
 def socketio_hyper_domains_stop(data):
     if current_user.role == 'admin': 
@@ -1127,7 +1143,7 @@ def socketio_admin_domains_update(data):
 @socketio.on('forcedhyp_update', namespace='/isard-admin/sio_admins')
 def socketio_admin_forcedhyp_update(data):
     #remote_addr=request.headers['X-Forwarded-For'].split(',')[0] if 'X-Forwarded-For' in request.headers else request.remote_addr.split(',')[0]
-
+    print('forcedhyp_update')
     res=app.adminapi.update_forcedhyp(data['id'], data['forced_hyp'])
     if res:
         data=json.dumps({'id':data['id'], 'result':True,'title':'Updated forced hypervisor','text':'Forced hypervisor has been updated...','icon':'success','type':'success'})

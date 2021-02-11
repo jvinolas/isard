@@ -1,7 +1,7 @@
 import os, time
 from pprint import pprint
 import traceback
-
+import configparser
 from pythonping import ping
 
 from rethinkdb import RethinkDB; r = RethinkDB()
@@ -57,6 +57,34 @@ def reacheable(hostname, waittime=1000):
     res = ping(hostname, count=1, timeout=1)
     if res.success(): return True
     return False
+
+
+def load_file():
+
+    if not os.path.isfile(os.path.join(os.path.join(os.path.dirname(__file__),'../../isard.conf'))):
+        try:
+            print('isard.conf not found, trying to copy from isard.conf.default')
+            # ~ shutil.copyfile('isard.conf.default', 'isard.conf') 
+        except Exception as e:
+            print('Aborting, isard.conf.default not found. Please configure your RethinkDB database in file isard.conf')
+            print(str(e))
+            return False
+
+    try:
+        rcfg = configparser.ConfigParser()
+        rcfg.read(os.path.join(os.path.dirname(__file__),'../../isard.conf'))
+    except Exception as e:
+        print('isard.conf file can not be opened. \n Exception init_app: {}'.format(e))
+        return False          
+    app.config.setdefault('RETHINKDB_HOST', rcfg.get('RETHINKDB', 'HOST'))
+    app.config.setdefault('RETHINKDB_PORT', rcfg.get('RETHINKDB', 'PORT'))
+    app.config.setdefault('RETHINKDB_AUTH', '')
+    app.config.setdefault('RETHINKDB_DB', rcfg.get('RETHINKDB', 'DBNAME'))
+
+    app.config.setdefault('LOG_LEVEL', rcfg.get('LOG', 'LEVEL'))
+    app.config.setdefault('LOG_FILE', rcfg.get('LOG', 'FILE'))
+    app.debug=True if rcfg.get('LOG', 'LEVEL') == 'DEBUG' else False
+
 
 while True:
     if conn == False:

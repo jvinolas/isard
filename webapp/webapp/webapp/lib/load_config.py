@@ -81,6 +81,7 @@ class loadConfig():
         app.shares_templates = sysconfig.get('shares', {}).get('templates', False)
         app.shares_isos = sysconfig.get('shares', {}).get('isos', False)
         app.wireguard_users_keys = sysconfig.get('vpn_users', {}).get('wireguard', {}).get('keys', False)
+        app.wireguard_hypers_keys = sysconfig.get('vpn_hypers', {}).get('wireguard', {}).get('keys', False)
             
 
 def load_config():

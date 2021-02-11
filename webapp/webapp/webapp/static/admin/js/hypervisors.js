@@ -202,7 +202,6 @@ $(document).ready(function() {
     });
 
     socket.on('hyper_data', function(data){
-        //~ console.log('hyper_data')
         //~ console.log(data)
         var data = JSON.parse(data);
         new_hyper=dtUpdateInsert(table,data,false);
@@ -251,8 +250,25 @@ $(document).ready(function() {
         tablepools.ajax.reload()
     });
 
+    socket.on('hyper_vpn', function (data) {
+        var data = JSON.parse(data);
+        if(data['kind']=='url'){
+            setCookie('isard', data['cookie'], 1)
+            window.open(data['viewer'], '_blank');            
+        }
+        if(data['kind']=='file'){
+            var viewerFile = new Blob([data['content']], {type: data['mime']});
+            var a = document.createElement('a');
+                name='isard-hyper-vpn'; ext='conf'
+                a.download = name+'.'+ext;
+                a.href = window.URL.createObjectURL(viewerFile);
+            var ev = document.createEvent("MouseEvents");
+                ev.initMouseEvent("click", true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dispatchEvent(ev);              
+        }
+    });
+
     socket.on('add_form_result', function (data) {
-        //~ console.log('received result')
         var data = JSON.parse(data);
         if(data.result){
             $("#modalAddHyper #modalAdd")[0].reset();
@@ -350,7 +366,12 @@ function setHypervisorDetailButtonsStatus(id,status){
                 //~ $('#actions-'+id+' *[class^="btn"]').prop('disabled', false);
           }
           $('#actions-delete-'+id+' .btn-edit').prop('disabled', false);
-          
+
+          if(id=='isard-hypervisor'){
+            $('#actions-enable-'+id+' .btn-vpn').prop('disabled', true);
+          }else{
+            $('#actions-enable-'+id+' .btn-vpn').prop('disabled', false);
+          }
 
 }
 
@@ -380,6 +401,12 @@ function actionsHyperDetail(){
                         }).on('pnotify.cancel', function() {
                     }); 
                 });
+
+        $('.btn-vpn').on('click', function () {
+            var closest=$(this).closest("div");
+            var pk=closest.attr("data-pk");
+            socket.emit('hyper_vpn',{'pk':pk})
+        });
 
         $('.btn-delete').on('click', function () {
                 var pk=$(this).closest("div").attr("data-pk");
