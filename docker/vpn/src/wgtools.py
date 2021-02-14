@@ -90,7 +90,6 @@ class Wg(object):
 
         if table == 'users':
             self.uipt=UserIpTools()
-
         # Get actual server keys or generate new ones
         self.keys=Keys(interface)
 
@@ -149,9 +148,8 @@ class Wg(object):
                 self.up_peer(peer)
             else:
                 self.up_peer(new_peer)
-            if self.table=='users':
-                self.uipt.add_user(peer['id'],peer['vpn']['wireguard']['Address'])
-                pprint(self.uipt.get_tables())
+            #if self.table=='users':
+            #    self.uipt.add_user(peer['id'],peer['vpn']['wireguard']['Address'])
         pprint(create_peers)
         r.table(self.table).insert(create_peers, conflict='update').run()
 
@@ -199,15 +197,15 @@ class Wg(object):
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
         self.up_peer(new_peer)
-        if self.table=='users':
-            self.uipt.add_user(peer['id'],new_peer['vpn']['wireguard']['Address'])
+        #if self.table=='users':
+        #    self.uipt.add_user(peer['id'],new_peer['vpn']['wireguard']['Address'])
         r.table(self.table).insert(new_peer, conflict='update').run()
 
     def remove_peer(self,peer):
         if 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
             check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'remove'), text=True).strip()  
-        if self.table=='users':
-            self.uipt.del_user(peer['id'],peer['vpn']['wireguard']['Address'])
+        #if self.table=='users':
+        #    self.uipt.del_user(peer['id'],peer['vpn']['wireguard']['Address'])
 
     def gen_client_ip(self):
         next_ip = str(next(host for host in self.server_net.hosts() if str(host) not in self.clients_reserved_ips))
@@ -285,8 +283,9 @@ PersistentKeepalive = 21
             return
         else:
             #Updated
-            if 'viewer' in data['old_val'].keys() and data['old_val']['viewer'] == {} and 'guest_ip' in data['new_val']['viewer']:
+            if data['new_val']['status'] == 'Started' and 'viewer' in data['old_val'].keys() and data['old_val']['viewer'] == {} and 'guest_ip' in data['new_val']['viewer']:
                 # As the changes filters for guest_ip in viewer we won't have viewer field till guest_ip is set.
                 self.uipt.desktop_add(data['new_val']['user'],data['new_val']['viewer']['guest_ip'])
-            elif data['new_val']['status'] != 'Started' and data['old_val']['status'] == 'Started':
-                self.uipt.desktop_remove(data['old_val']['user'],data['old_val']['viewer']['guest_ip'])
+            elif data['new_val']['status'] == 'Stopped' and data['old_val']['status'] == 'Stopped':
+                if 'viewer' not in data['new_val'].keys() and 'viewer' in data['old_val'].keys() and 'guest_ip' in data['old_val']['viewer'].keys():
+                    self.uipt.desktop_remove(data['old_val']['user'],data['old_val']['viewer']['guest_ip'])

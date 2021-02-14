@@ -48,3 +48,15 @@ class IpTools(object):
         if table.is_chain(chain):
             chain = iptc.Chain(table, chain)
             chain.flush()
+
+    def delete_rule(self,chain,src=False,dst=False,table=iptc.Table.FILTER):
+        table = iptc.Table(table)
+        table.autocommit = False
+        chain = iptc.Chain(table, chain)
+        for rule in chain.rules:
+            if rule.src and src in rule.src:
+                chain.delete_rule(rule)
+            if rule.src and src in rule.src:
+                chain.delete_rule(rule)
+        table.commit()
+        table.autocommit = True
