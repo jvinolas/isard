@@ -32,46 +32,55 @@ while True:
         print('Config regenerated from database...\nStarting to monitor users changes...')
         #for user in r.table('users').pluck('id','vpn').changes(include_initial=False).run():
         for data in r.table('users').pluck('id','vpn').merge({'table':'users'}).changes(include_initial=False).union(
-            r.table('hypervisors').pluck('id','vpn','hypervisor_number').merge({'table':'hypers'}).changes(include_initial=False)).run():
+            r.table('hypervisors').pluck('id','vpn','hypervisor_number').merge({'table':'hypers'}).changes(include_initial=False)).union(
+                r.table('domains').pluck('id','user','vpn','status',{'viewer':'guest_ip'}).merge({'table':'domains'}).changes(include_initial=False)).run():
+
             if data['new_val'] == None:
-                ### User was deleted
+                ### Was deleted
                 if data['old_val']['table'] == 'users':
                     wg_users.remove_peer(data['old_val'])
-                else:
+                elif data['old_val']['table'] == 'hypers':
                     if data['old_val']['id']=='isard-hypervisor': continue
                     wg_hypers.remove_peer(data['old_val'])
+                elif data['old_val']['table'] == 'domains':
+                    wg_users.desktop_iptables(data)
                 continue
             if data['old_val'] == None:
-                ### New user
+                ### New 
                 print('New: '+data['new_val']['id']+'found...')
                 if data['new_val']['table'] == 'users':
                     wg_users.add_peer(data['new_val'])
-                else:
+                elif data['old_val']['table'] == 'hypers':
                     if data['new_val']['id']=='isard-hypervisor': continue
                     wg_hypers.add_peer(data['new_val'])
+                elif data['old_val']['table'] == 'domains':
+                    wg_users.desktop_iptables(data)                    
             else:
-                ### Updated vpn data config
-                if 'vpn' not in data['old_val']: 
-                    continue #Was just added
+                ### Update
+                if data['old_val']['table'] in ['users','hypers']:
+                    if 'vpn' not in data['old_val']: 
+                        continue #Was just added
 
-                if data['old_val']['vpn']['iptables'] != data['new_val']['vpn']['iptables']:
-                    print('Modified iptables')
-                    if data['old_val']['table'] == 'users':
-                        wg_users.set_iptables(data['new_val'])
+                    if data['old_val']['vpn']['iptables'] != data['new_val']['vpn']['iptables']:
+                        print('Modified iptables')
+                        if data['old_val']['table'] == 'users':
+                            wg_users.set_iptables(data['new_val'])
+                        else:
+                            ## Maybe just avoid rules on hypers table?????
+                            ## I THINK THIS IS NOT NEEDED
+                            if data['new_val']['id']=='isard-hypervisor': continue
+                            wg_hypers.set_iptables(data['new_val'])
                     else:
-                        ## Maybe just avoid rules on hypers table?????
-                        ## I THINK THIS IS NOT NEEDED
-                        if data['new_val']['id']=='isard-hypervisor': continue
-                        wg_hypers.set_iptables(data['new_val'])
-                else:
-                    continue
-                    print('Modified wireguard config')
-                    # who else could modify the wireguard config?? 
-                    if data['old_val']['table'] == 'users':
-                        wg_users.update_peer(data['new_val'])
-                    else:
-                        if data['new_val']['id']=='isard-hypervisor': continue
-                        wg_hypers.update_peer(data['new_val'])
+                        continue
+                        print('Modified wireguard config')
+                        # who else could modify the wireguard config?? 
+                        if data['old_val']['table'] == 'users':
+                            wg_users.update_peer(data['new_val'])
+                        else:
+                            if data['new_val']['id']=='isard-hypervisor': continue
+                            wg_hypers.update_peer(data['new_val'])
+                elif data['old_val']['table'] == 'domains':
+                    wg_users.desktop_iptables(data) 
 
     except (ReqlDriverError, ReqlOpFailedError):
         print('Users: Rethink db connection missing!')

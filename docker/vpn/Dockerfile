@@ -11,7 +11,24 @@ RUN apk add --no-cache --virtual .build_deps \
     build-base \
     python3-dev \
     libffi-dev \
-    openssl-dev 
+    openssl-dev \ 
+    autoconf \
+    automake \
+    libtool \
+    libmnl-dev \
+    libnftnl-dev \
+    git
+
+# python-iptables
+RUN git clone git://git.netfilter.org/iptables && cd iptables && \
+    ./autogen.sh && \
+    ./configure --prefix=/tmp/iptables && \
+    make && make install && cd .. && rm -rf iptables
+
+ENV IPTABLES_LIBDIR=/tmp/iptables/lib
+ENV XTABLES_LIBDIR=/tmp/iptables/lib/xtables
+
+# python requirements
 COPY docker/vpn/requirements.pip3 /requirements.pip3
 RUN pip3 install --no-cache-dir -r requirements.pip3
 RUN apk del .build_deps

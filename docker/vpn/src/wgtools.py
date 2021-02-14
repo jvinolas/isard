@@ -9,6 +9,8 @@ from subprocess import check_call, check_output
 import ipaddress
 import traceback
 
+from user_iptools import UserIpTools
+
 class Keys(object):
     def __init__(self,interface='wg0'):
         self.interface=interface
@@ -86,6 +88,9 @@ class Wg(object):
         self.allowed_client_nets=allowed_client_nets
         self.clients_net=clients_net
 
+        if table == 'users':
+            self.uipt=UserIpTools()
+
         # Get actual server keys or generate new ones
         self.keys=Keys(interface)
 
@@ -144,6 +149,9 @@ class Wg(object):
                 self.up_peer(peer)
             else:
                 self.up_peer(new_peer)
+            if self.table=='users':
+                self.uipt.add_user(peer['id'],peer['vpn']['wireguard']['Address'])
+                pprint(self.uipt.get_tables())
         pprint(create_peers)
         r.table(self.table).insert(create_peers, conflict='update').run()
 
@@ -191,11 +199,15 @@ class Wg(object):
     def add_peer(self,peer):
         new_peer = self.gen_new_peer(peer)
         self.up_peer(new_peer)
+        if self.table=='users':
+            self.uipt.add_user(peer['id'],new_peer['vpn']['wireguard']['Address'])
         r.table(self.table).insert(new_peer, conflict='update').run()
 
     def remove_peer(self,peer):
         if 'vpn' in peer.keys() and 'wireguard' in peer['vpn'].keys():
             check_output(('/usr/bin/wg', 'set', self.interface, 'peer', peer['vpn']['wireguard']['keys']['public'], 'remove'), text=True).strip()  
+        if self.table=='users':
+            self.uipt.del_user(peer['id'],peer['vpn']['wireguard']['Address'])
 
     def gen_client_ip(self):
         next_ip = str(next(host for host in self.server_net.hosts() if str(host) not in self.clients_reserved_ips))
@@ -263,3 +275,18 @@ PersistentKeepalive = 21
 #        [hypervisor]
 #        [IPv4Network('192.168.128.0/23'), IPv4Network('192.168.130.0/23'), IPv4Network('192.168.132.0/23'), IPv4Network('192.168.134.0/23'), IPv4Network('192.168.136.0/23'), IPv4Network('192.168.138.0/23'), IPv4Network('192.168.140.0/23'), IPv4Network('192.168.142.0/23')]
 
+
+    def desktop_iptables(self,data):
+        if data['old_val'] == None:
+            #New. Do nothing as will not have ip yet.
+            return
+        elif data['new_val'] == None:
+            #Deleted. We should ensure that no rules are kept for this domain.
+            return
+        else:
+            #Updated
+            if 'viewer' in data['old_val'].keys() and data['old_val']['viewer'] == {} and 'guest_ip' in data['new_val']['viewer']:
+                # As the changes filters for guest_ip in viewer we won't have viewer field till guest_ip is set.
+                self.uipt.desktop_add(data['new_val']['user'],data['new_val']['viewer']['guest_ip'])
+            elif data['new_val']['status'] != 'Started' and data['old_val']['status'] == 'Started':
+                self.uipt.desktop_remove(data['old_val']['user'],data['old_val']['viewer']['guest_ip'])
