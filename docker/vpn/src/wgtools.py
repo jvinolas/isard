@@ -65,8 +65,7 @@ class Keys(object):
             exit(1)
 
         old_key=r.table('config').get(1).pluck('vpn_'+self.interface).run()
-
-        if 'vpn' not in old_key.keys() or actual_private_key != old_key['vpn_'+self.interface]['wireguard']['keys']['private']:
+        if 'vpn_'+self.interface not in old_key.keys() or actual_private_key != old_key['vpn_'+self.interface]['wireguard']['keys']['private']:
             r.table('config').get(1).update({'vpn_'+self.interface:{'wireguard':{'keys':{'private':actual_private_key,
                                                                         'public':actual_public_key}}}}).run()
             update_clients=True
@@ -81,6 +80,7 @@ class Keys(object):
                 exit(1)            
         self.skeys={'private':actual_private_key,
                     'public':actual_public_key}
+        print(update_clients)
         self.update_clients=update_clients
 
         
@@ -134,8 +134,12 @@ class Wg(object):
             r.table(self.table).replace(r.row.without('vpn')).run()
         #####r.table('hypervisors').replace(r.row.without('vpn')).run()
         print('Initializing peers...')
-        wglist = list(r.table(self.table).pluck('id','vpn','hypervisor_number').run())
-        if self.table == 'hypervisors': wglist = [d for d in wglist if d['id'] != 'isard-hypervisor']
+        if self.table == 'hypervisors':
+            wglist = list(r.table(self.table).pluck('id','vpn','hypervisor_number').run())
+            wglist = [d for d in wglist if d['id'] != 'isard-hypervisor']
+        elif self.table == 'users':
+            wglist = list(r.table(self.table).pluck('id','vpn').run())
+
         self.clients_reserved_ips=self.clients_reserved_ips+[p['vpn']['wireguard']['Address'] for p in wglist if 'vpn' in p.keys() and 'wireguard' in p['vpn'].keys()]
 
         create_peers=[]
