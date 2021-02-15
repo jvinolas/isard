@@ -9,10 +9,7 @@ from subprocess import check_call, check_output
 import ipaddress
 import traceback
 
-#from iptools import IpTools
 import iptc
-
-#ipt=IpTools()
 
 REJECT={'target': {'REJECT': {'reject-with': 'icmp-host-prohibited'}}}
 

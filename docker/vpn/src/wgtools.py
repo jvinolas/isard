@@ -9,7 +9,12 @@ from subprocess import check_call, check_output
 import ipaddress
 import traceback
 
-from user_iptools import UserIpTools
+# Chain system. Not working when removing user when his last desktop
+# is stopped
+#from user_iptools import UserIpTools
+
+# Simpler iptools. Just adds both directions filtering
+from simple_iptools import UserIpTools
 
 class Keys(object):
     def __init__(self,interface='wg0'):
@@ -88,8 +93,6 @@ class Wg(object):
         self.allowed_client_nets=allowed_client_nets
         self.clients_net=clients_net
 
-        if table == 'users':
-            self.uipt=UserIpTools()
         # Get actual server keys or generate new ones
         self.keys=Keys(interface)
 
@@ -105,6 +108,9 @@ class Wg(object):
         self.init_peers(reset_client_certs)
         #for user_id,peer in self.peers.items():
         #    print(self.client_config(peer))
+
+        if table == 'users':
+            self.uipt=UserIpTools()
 
     def init_server(self):
         ## Server config
@@ -150,7 +156,7 @@ class Wg(object):
                 self.up_peer(new_peer)
             #if self.table=='users':
             #    self.uipt.add_user(peer['id'],peer['vpn']['wireguard']['Address'])
-        pprint(create_peers)
+        #pprint(create_peers)
         r.table(self.table).insert(create_peers, conflict='update').run()
 
     def get_hyper_subnet(self,hypervisor_number):
@@ -165,8 +171,6 @@ class Wg(object):
         return dhcpsubnets[hypervisor_number]
 
     def gen_new_peer(self,peer):
-        import pprint
-        pprint.pprint(peer)
         if self.table == 'hypervisors':
             if 'hypervisor_number' not in peer.keys():
                 peer['hypervisor_number'] = 1
@@ -228,7 +232,7 @@ Address = %s/%s
 SaveConfig = false
 PrivateKey = %s
 ListenPort = %s
-PostUp = iptables -I FORWARD -i wg0 -o wg0 -j REJECT --reject-with icmp-host-prohibited
+PostUp = 
 
 """ % (self.server_ip,self.server_mask,self.keys.skeys['private'],self.server_port)
 

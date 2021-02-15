@@ -89,7 +89,7 @@ while True:
     except Exception as e:
         print('Users internal error: \n'+traceback.format_exc())
         log.error('Users internal error: \n'+traceback.format_exc())
-        exit(1)
+        #exit(1)
 
 print('Thread ENDED!!!!!!!')
 log.error('Thread ENDED!!!!!!!')  
