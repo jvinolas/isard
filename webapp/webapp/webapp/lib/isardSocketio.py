@@ -116,7 +116,7 @@ class DomainsThread(threading.Thread):
                                                 json.dumps(data),
                                                 #~ json.dumps(app.isardapi.f.flatten_dict(data)), 
                                                 namespace='/isard-admin/sio_users', 
-                                                room=user+'_taggeds')
+                                                room=user+'_tagged')
 
             except ReqlDriverError:
                 print('DomainsThread: Rethink db connection lost!')
@@ -976,9 +976,10 @@ def socketio_users_connect():
                     room='user_'+current_user.id)
 
 @socketio.on('join_rooms', namespace='/isard-admin/sio_users')
-def socketio_admins_joinrooms(join_rooms):
+def socketio_advanceds_joinrooms(join_rooms):
     if current_user.role=='advanced':
-        join_room(current_user.id+'_taggeds')
+        if 'tagged' in join_rooms:
+            join_room(current_user.id+'_tagged')
             
 
 @socketio.on('disconnect', namespace='/isard-admin/sio_users')
@@ -1047,14 +1048,14 @@ def socketio_admin_domains_add(form_data):
                     room=current_user.category+'_domains')                    
 
 @socketio.on('domain_add_advanced', namespace='/isard-admin/sio_users')
-def socketio_admin_domains_add(form_data):
+def socketio_advanced_domains_add(form_data):
     exceeded = quotas.check('NewDesktop',current_user.id)
     if exceeded != False:
         data=json.dumps({'result':False,'title':'New desktop quota exceeded.','text':'Desktop '+create_dict['name']+' can\'t be created. '+str(exceeded),'icon':'warning','type':'error'})
         socketio.emit('add_form_result',
                         data,
                         namespace='/isard-admin/sio_users', 
-                        room='domains')
+                        room=current_user.id+'_tagged')
         return        
 
     create_dict=app.isardapi.f.unflatten_dict(form_data)
@@ -1064,7 +1065,7 @@ def socketio_admin_domains_add(form_data):
         socketio.emit('add_form_result',
                         data,
                         namespace='/isard-admin/sio_users', 
-                        room='domains')
+                        room=current_user.id+'_tagged')
     create_dict=parseHardware(create_dict)
     create_dict=quotas.limit_user_hardware_allowed(create_dict,current_user.id)
 
@@ -1077,7 +1078,7 @@ def socketio_admin_domains_add(form_data):
     socketio.emit('adds_form_result',
                     data,
                     namespace='/isard-admin/sio_users', 
-                    room='user_'+current_user.id)    
+                    room=current_user.id+'_tagged')    
 
 @socketio.on('domain_edit', namespace='/isard-admin/sio_users')
 def socketio_domain_edit(form_data):

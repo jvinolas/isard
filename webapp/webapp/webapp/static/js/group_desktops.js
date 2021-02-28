@@ -388,6 +388,23 @@ $(document).ready(function() {
         });
     });
 
+    socket.on('adds_form_result', function (data) {
+        var data = JSON.parse(data);
+        if(data.result){
+            $("#modalAddDesktop #modalAdd")[0].reset();
+            $("#modalAddDesktop").modal('hide');                   
+        }
+        new PNotify({
+                title: data.title,
+                text: data.text,
+                hide: true,
+                delay: 4000,
+                icon: 'fa fa-'+data.icon,
+                opacity: 1,
+                type: data.type
+        }); 
+    });
+
     socket.on('edit_form_result', function (data) {
         var data = JSON.parse(data);
         if(data.result){
