@@ -42,10 +42,11 @@ class isardViewer():
         if not domain['status'] == 'Started':
             raise DomainNotStarted
 
-        if not (current_user.role == 'advanced' and 'tag' in domain.keys() and domain['tag'] in current_user.tags):
-            return False
         if current_user != False:
-            if domain['user'] != current_user.id: return False 
+            # if not owner and not his tag
+            if not domain['user'] != current_user.id or not (current_user.role == 'advanced' and 'tag' in domain.keys() and domain['tag'] in current_user.tags):
+                return False
+
         if  'preferred' not in domain['options']['viewers'].keys() or not domain['options']['viewers']['preferred'] == default_viewer:
             r.table('domains').get(id).update({'options':{'viewers':{'preferred':default_viewer}}}).run(db.conn)
 
