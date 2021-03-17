@@ -323,7 +323,7 @@ $(document).ready(function() {
         }
         //console.log(ids)
         api.ajax('/isard-admin/advanced/videowall','POST',{'ids':ids}).done(function(data) {
-            addCols(data['viewers'].length)
+            addViewers(data['viewers'])
             // $.each(data['viewers'],function(key, value){
             //     if(value != false){
             //         $('#videowall').attr('src', value);
@@ -881,15 +881,21 @@ function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
 
-var addCols = function (num){
-    console.log(num)
-    for (var i=1;i<=num;i++) {
+var addViewers = function (desktop_list){
+    $.each(desktop_list,function(key, value){
+        addViewer('DesktopName',value)
+        // if(value != false){
+        //         $('#videowall').attr('src', value);
+        //     }
+        // });
+    });
+}
+
+var addViewer = function (name,url){
         var myCol = $('<div class="col-sm-3 col-md-3 pb-2"></div>');
-        var myPanel = $('<div class="card card-outline-info" id="'+i+'Panel"><div class="card-block"><div class="card-title"><span>Desktop #'+i+'</span><button type="button" class="close" data-target="#'+i+'Panel" data-dismiss="alert"><span class="float-right"><i class="fa fa-remove"></i></span></button></div><p><iframe id="videowall" class="responsive-iframe" src=""></iframe></p><img src="//placehold.it/50/eeeeee" class="rounded rounded-circle"></div></div>');
+        var myPanel = $('<div class="card card-outline-info" id="'+name+'Panel"><div class="card-block"><div class="card-title"><span>#'+name+'</span><button type="button" class="close" data-target="#'+name+'Panel" data-dismiss="alert"><span class="float-right"><i class="fa fa-remove"></i></span></button></div><p><iframe id="videowall" class="responsive-iframe" src="'+url+'"></p><img src="//placehold.it/50/eeeeee" class="rounded rounded-circle"></div></div>');
         myPanel.appendTo(myCol);
         myCol.appendTo('#videowalls');
-    }
-
 
     $('.close').on('click', function(e){
         e.stopPropagation();  
