@@ -93,7 +93,7 @@ function setViewerButtons(id,socket,offer){
         }else{
             preferred=false
         }
-        console.log($(this).data('type')+'-'+$(this).data('client'))
+        //console.log($(this).data('type')+'-'+$(this).data('client'))
         socket.emit('domain_viewer',{'pk':id,'kind':$(this).data('type')+'-'+$(this).data('client'),'os':$(this).data('os'),'preferred':preferred});
         $("#modalOpenViewer").modal('hide');        
     });

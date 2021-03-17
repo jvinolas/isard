@@ -19,6 +19,8 @@ app.adminapi = admin_api.isardAdmin()
 from ...lib import trees
 template_tree = trees.TemplateTree()
 
+from ...lib.isardViewer import isardViewer
+isardviewer = isardViewer()
 
 from .decorators import isAdmin, isAdminManager, isAdvanced, isAdminManagerAdvanced
 
@@ -40,7 +42,6 @@ def admin_domains(nav='Domains'):
 @login_required
 @isAdminManager
 def admin_mdomains():
-    print('manager')
     dict=request.get_json(force=True)
     desktop_domains=app.adminapi.multiple_check_field('domains','kind','desktop',dict['ids'])
     res=app.adminapi.multiple_action('domains',dict['action'],desktop_domains)
@@ -50,11 +51,24 @@ def admin_mdomains():
 @login_required
 @isAdminManagerAdvanced
 def admin_advanced_mdomains():
-    print('advanced')
     dict=request.get_json(force=True)
     desktop_domains=app.adminapi.multiple_check_field('domains','kind','desktop',dict['ids'])
     res=app.adminapi.multiple_action('domains',dict['action'],desktop_domains)
     return json.dumps({'test':1}), 200, {'ContentType': 'application/json'}
+
+@app.route('/isard-admin/advanced/videowall', methods=['POST'])
+@login_required
+@isAdminManagerAdvanced
+def admin_advanced_videowall():
+    if request.method == 'POST':
+        data=request.get_json(force=True)
+        if 'ids' in data.keys():
+            viewers=[]
+            for id in data['ids']:
+                viewer_data=isardviewer.viewer_data(id,get_viewer='vnc-html5',current_user=current_user, get_cookie=False)
+                viewers.append(viewer_data)
+            return json.dumps({'viewers':viewers}), 200, {'ContentType': 'application/json'}
+    return json.dumps('Could not delete.'), 500, {'ContentType':'application/json'} 
 
 @app.route('/isard-admin/admin/domains/get/<kind>')
 @app.route('/isard-admin/admin/domains/get')

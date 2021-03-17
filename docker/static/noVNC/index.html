@@ -237,6 +237,15 @@
             document.getElementById('statusDesktopName').textContent = text;
         }
 
+        function detectQueryString() {
+            var currentQueryString = window.location.search;
+            if (currentQueryString) {
+                return true;
+            } else {
+            return false;
+            }
+        }
+
         // This function extracts the value of one variable from the
         // query string. If the variable isn't defined in the URL
         // it returns the default value instead.
@@ -279,12 +288,12 @@
             app.run({
                 'callback': f,
                 'protocol': 'wss',
-                'host': getParameter('host') || readQueryVariable('host', window.location.hostname),
-                'port': getParameter('port') || '443',
-                'desktopName': decodeURI(getParameter('vmName')) || decodeURI(readQueryVariable('vmName')),
-                'vmHost': getParameter('vmHost') || readQueryVariable('vmHost'),
-                'vmPort': (getParameter('vmPort') || readQueryVariable('vmPort')) - 2, // the spice (no TLS) port is two ports less than the vnc
-                'token': getParameter('token') || readQueryVariable('passwd'),
+                'host': readQueryVariable('host', window.location.hostname),
+                'port': '443',
+                'desktopName': decodeURI(readQueryVariable('vmName')),
+                'vmHost':  readQueryVariable('vmHost'),
+                'vmPort':  readQueryVariable('vmPort')) - 2, // the spice (no TLS) port is two ports less than the vnc
+                'token':readQueryVariable('passwd'),
                 'clientOffset': {
                     'x': 0,
                     'y': 0
@@ -298,12 +307,29 @@
 
         // Read parameters specified in the URL query string
         // By default, use the host and port of server that served this file
-        desktopName = decodeURI(getParameter('vmName')) || decodeURI(readQueryVariable('vmName'));
-        const host = getParameter('host') || readQueryVariable('host', window.location.hostname);
-        const port = getParameter('port') === false || getParameter('port') === undefined ? '' : ':' + getParameter('port');
-        const vmHost = getParameter('vmHost') || readQueryVariable('vmHost');
-        const vmPort = (getParameter('vmPort') || readQueryVariable('vmPort'));
-        const password = getParameter('token') || readQueryVariable('passwd');
+        if(true){
+        // if(detectQueryString()){
+            desktopName = decodeURI(readQueryVariable('vmName'));
+            const host = readQueryVariable('host', window.location.hostname);
+            const port = getParameter('port') === undefined ? '' : ':' + getParameter('port');
+            const vmHost = readQueryVariable('vmHost');
+            const vmPort = readQueryVariable('vmPort');
+            const password = readQueryVariable('passwd');
+        }else{
+            desktopName = decodeURI(getParameter('vmName'));
+            const host = getParameter('host');
+            const port = getParameter('port') === false ;
+            const vmHost = getParameter('vmHost');
+            const vmPort = (getParameter('vmPort'));
+            const password = getParameter('token');
+        }
+
+        // desktopName = decodeURI(getParameter('vmName')) || decodeURI(readQueryVariable('vmName'));
+        // const host = getParameter('host') || readQueryVariable('host', window.location.hostname);
+        // const port = getParameter('port') === false || getParameter('port') === undefined ? '' : ':' + getParameter('port');
+        // const vmHost = getParameter('vmHost') || readQueryVariable('vmHost');
+        // const vmPort = (getParameter('vmPort') || readQueryVariable('vmPort'));
+        // const password = getParameter('token') || readQueryVariable('passwd');
 
         // | | |         | | |
         // | | | Connect | | |

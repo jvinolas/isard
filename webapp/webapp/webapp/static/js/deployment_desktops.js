@@ -188,7 +188,6 @@ $(document).ready(function() {
                         },
                         addclass: 'pnotify-center'
                 }).get().on('pnotify.confirm', function() {
-                    console.log('mactions')
                     api.ajax('/isard-admin/advanced/mdomains','POST',{'ids':ids,'action':action}).done(function(data) {
                         $('#mactions option[value="none"]').prop("selected",true);
                     }); 
@@ -306,6 +305,32 @@ $(document).ready(function() {
         }
     });	
 
+
+    $('.btn-videowall').on('click', function () {
+        ids=[]
+        if(table.rows('.active').data().length){
+            $.each(table.rows('.active').data(),function(key, value){
+                if(value['status'] == "Started"){
+                    ids.push(value['id']);
+                }
+            });
+        }else{ 
+            $.each(table.rows({filter: 'applied'}).data(),function(key, value){
+                if(value['status'] == "Started"){
+                    ids.push(value['id']);
+                }
+            });
+        }
+        //console.log(ids)
+        api.ajax('/isard-admin/advanced/videowall','POST',{'ids':ids}).done(function(data) {
+            $.each(data['viewers'],function(key, value){
+                if(value != false){
+                    $('#videowall').attr('src', value);
+                }
+            });
+        });
+    });
+
     modal_add_desktops = $('#modal_add_desktops').DataTable()
     initalize_modal_all_desktops_events()
     $("#modalAddDesktop #send-block").unbind('click');
@@ -328,7 +353,6 @@ $(document).ready(function() {
                 if (template !=''){
                     data=$('#modalAdd').serializeObject();
                     data=replaceAlloweds_arrays('#modalAddDesktop #alloweds-block',data)
-                    console.log(data)
                     socket.emit('domain_add_advanced',data)
                 }else{
                     $('#modal_add_desktops').closest('.x_panel').addClass('datatables-error');

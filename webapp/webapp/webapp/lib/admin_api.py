@@ -110,6 +110,14 @@ class isardAdmin():
         with app.app_context():
             return [d['id'] for d in list(r.table(table).get_all(r.args(ids)).filter({field:value}).pluck('id').run(db.conn))]
 
+    # def videowall(self, ids, get_viewer='vnc-html5',current_user=False,default_viewer=False,get_cookie=True):
+    #     viewers=[]
+    #     for id in ids:
+    #         viewer_data=isardviewer.viewer_data(data['pk'],get_viewer=data['kind'],default_viewer=default_viewer,current_user=current_user)
+    #         viewers.append(viewer_data)
+    #     return viewers
+
+
     def get_group(self,id):
         with app.app_context():
             group = r.table('groups').get(id).run(db.conn)  
